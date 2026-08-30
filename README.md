@@ -6,6 +6,8 @@
 
 Put temporary cat photos and GIFs above any app on your Windows screen.
 
+Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://github.com/Yusuf-Karanib/cat-canvas).
+
 ![Cat Canvas Desktop picker](docs/picker.png)
 
 ## What it does
