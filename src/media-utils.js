@@ -36,5 +36,21 @@
     return safeSeconds * 1000;
   }
 
-  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs });
+  function slideshowChoices(catalog, favoriteIds, source, random = Math.random) {
+    const favorites = new Set(favoriteIds);
+    let choices;
+    if (source === "favorites") choices = catalog.filter((item) => favorites.has(item.id));
+    else if (source === "mine") choices = catalog.filter((item) => item.custom);
+    else if (source === "gifs") choices = catalog.filter((item) => item.kind === "gif");
+    else choices = [...catalog];
+
+    const shuffled = [...choices];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled;
+  }
+
+  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices });
 });

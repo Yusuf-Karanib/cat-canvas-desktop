@@ -26,19 +26,29 @@
       <span class="add-plus">+</span>
       <span><strong>Add your own</strong><small>JPG, PNG, WebP, or GIF · saved locally</small></span>
     </button>
-    <div class="slideshow-row">
+    <div class="slideshow-panel">
       <button class="add-media slideshow" id="slideshow" type="button">
         <span class="add-plus">▶</span>
-        <span><strong>Photo slideshow</strong><small>Choose photos, then draw one changing frame</small></span>
+        <span><strong>Media slideshow</strong><small>Draw one frame that changes automatically</small></span>
       </button>
-      <label class="speed">Change every
-        <select id="slideshow-speed" aria-label="Slideshow speed">
-          <option value="5">5 sec</option>
-          <option value="10" selected>10 sec</option>
-          <option value="30">30 sec</option>
-          <option value="60">60 sec</option>
-        </select>
-      </label>
+      <div class="slideshow-settings">
+        <label class="speed">Show
+          <select id="slideshow-source" aria-label="Slideshow media">
+            <option value="random">Random</option>
+            <option value="favorites">Favorites</option>
+            <option value="mine">My media</option>
+            <option value="gifs">GIFs</option>
+          </select>
+        </label>
+        <label class="speed">Change every
+          <select id="slideshow-speed" aria-label="Slideshow speed">
+            <option value="5">5 sec</option>
+            <option value="10" selected>10 sec</option>
+            <option value="30">30 sec</option>
+            <option value="60">60 sec</option>
+          </select>
+        </label>
+      </div>
     </div>
     <p class="media-notice">Only add media you own or have permission to use.</p>
 

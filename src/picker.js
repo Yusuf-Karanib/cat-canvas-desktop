@@ -96,9 +96,10 @@ async function startDrawing(id) {
 document.querySelector("#random").addEventListener("click", () => startDrawing("random"));
 document.querySelector("#slideshow").addEventListener("click", async () => {
   status.className = "status";
-  status.textContent = "Choose at least 2 photos.";
+  status.textContent = "Draw a box for the slideshow.";
+  const source = document.querySelector("#slideshow-source").value;
   const seconds = Number(document.querySelector("#slideshow-speed").value);
-  const result = await window.catCanvasDesktop.startSlideshow(seconds, targetScreen.value);
+  const result = await window.catCanvasDesktop.startSlideshow(source, seconds, targetScreen.value);
   status.className = `status${result.started ? "" : " error"}`;
   status.textContent = result.message;
 });

@@ -17,7 +17,7 @@ Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://git
 - Press `Ctrl+Shift+K` to draw a Random cat immediately
 - Pick from 12 licensed meme images and 12 licensed GIFs
 - Add your own JPG, PNG, WebP, or GIF
-- Optionally choose several photos and place a changing slideshow frame
+- Run a slideshow using Random, Favorites, My media, or GIFs
 - Choose any connected monitor before drawing
 - Draw the exact box where the cat should appear
 - Random cats match wide, tall, and square boxes
@@ -42,7 +42,7 @@ This first release is not code-signed, so Windows may show a SmartScreen warning
 4. Hover over the cat to move, replace, lock, or remove it.
 5. Drag its bottom-right corner to resize it.
 
-For a slideshow, choose its speed, select **Photo slideshow**, pick at least 2 photos, then draw its box. Hover over it to go back, pause, play, or go forward. The selected photo list is forgotten when the app closes.
+For a slideshow, choose **Random**, **Favorites**, **My media**, or **GIFs**, choose its speed, then select **Media slideshow** and draw its box. Hover over it to go back, pause, play, or go forward.
 
 A locked cat lets clicks pass through to the app underneath. Right-click the tray icon and choose **Unlock All Overlays** to edit it again.
 

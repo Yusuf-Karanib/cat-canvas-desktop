@@ -1,11 +1,12 @@
 const canvas = document.querySelector("#canvas");
 const drawLayer = document.querySelector("#draw-layer");
 const drawBox = document.querySelector("#draw-box");
+const drawLabel = document.querySelector("#draw-label");
 const { randomSuitable, wrapIndex } = globalThis.CatCanvasMedia;
 
 let catalog = [];
 let requestedId = "random";
-let selectedPhotos = [];
+let slideshowItems = [];
 let slideshowDelay = 10000;
 let drawStart = null;
 let drawingActive = false;
@@ -92,8 +93,8 @@ function stopSlideshow(item) {
 }
 
 function placeMedia(rect) {
-  const isSlideshow = requestedId === "slideshow" && selectedPhotos.length >= 2;
-  const cat = isSlideshow ? selectedPhotos[0] : chooseCat(rect.width, rect.height);
+  const isSlideshow = requestedId === "slideshow" && slideshowItems.length >= 2;
+  const cat = isSlideshow ? slideshowItems[0] : chooseCat(rect.width, rect.height);
   if (!cat) return;
 
   const item = document.createElement("section");
@@ -126,18 +127,18 @@ function placeMedia(rect) {
   });
 
   if (isSlideshow) {
-    const controller = { photos: [...selectedPhotos], index: 0, paused: false, timer: null, delay: slideshowDelay };
+    const controller = { items: [...slideshowItems], index: 0, paused: false, timer: null, delay: slideshowDelay };
     const show = (index) => {
-      controller.index = wrapIndex(index, controller.photos.length);
-      const photo = controller.photos[controller.index];
-      image.src = photo.url;
-      image.alt = photo.name;
+      controller.index = wrapIndex(index, controller.items.length);
+      const nextItem = controller.items[controller.index];
+      image.src = nextItem.url;
+      image.alt = nextItem.name;
     };
     const restart = () => {
       clearInterval(controller.timer);
       if (!controller.paused) controller.timer = setInterval(() => show(controller.index + 1), controller.delay);
     };
-    const previous = createAction("‹", "Previous photo", () => {
+    const previous = createAction("‹", "Previous item", () => {
       show(controller.index - 1);
       restart();
     });
@@ -148,7 +149,7 @@ function placeMedia(rect) {
       pause.setAttribute("aria-label", pause.title);
       restart();
     });
-    const next = createAction("›", "Next photo", () => {
+    const next = createAction("›", "Next item", () => {
       show(controller.index + 1);
       restart();
     });
@@ -217,9 +218,12 @@ window.addEventListener("keydown", (event) => {
 
 window.catCanvasDesktop.onStartDrawing((payload) => {
   catalog = Array.isArray(payload.cats) ? payload.cats : [];
-  selectedPhotos = Array.isArray(payload.slideshow) ? payload.slideshow : [];
+  slideshowItems = Array.isArray(payload.slideshow) ? payload.slideshow : [];
   slideshowDelay = Number.isFinite(payload.slideshowDelay) ? payload.slideshowDelay : 10000;
   requestedId = payload.requestedId || "random";
+  drawLabel.textContent = requestedId === "slideshow"
+    ? "Drag to draw a slideshow box · Esc to cancel"
+    : "Drag to draw a cat box · Esc to cancel";
   drawingActive = true;
   ignoringMouse = false;
   drawStart = null;

@@ -3,13 +3,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
-const { slideshowDelayMs } = require("./media-utils");
+const { slideshowChoices, slideshowDelayMs } = require("./media-utils");
 
 const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
-const VALID_SLIDESHOW_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
-const MAX_SLIDESHOW_PHOTOS = 100;
 
 let pickerWindow;
 const overlayWindows = new Map();
@@ -263,22 +261,20 @@ async function addCustomMedia() {
   };
 }
 
-async function startSlideshow(_event, seconds, displayId) {
-  const result = await dialog.showOpenDialog(pickerWindow, {
-    title: "Choose photos for the slideshow",
-    properties: ["openFile", "multiSelections"],
-    filters: [{ name: "Photos", extensions: ["jpg", "jpeg", "png", "webp"] }]
-  });
-  if (result.canceled) return { started: false, message: "Slideshow canceled." };
-
-  const photos = result.filePaths
-    .filter((filePath) => VALID_SLIDESHOW_EXTENSIONS.has(path.extname(filePath).toLowerCase()) && fs.existsSync(filePath))
-    .slice(0, MAX_SLIDESHOW_PHOTOS)
-    .map((filePath) => ({ url: mediaUrl(filePath), name: path.basename(filePath) }));
-
-  if (photos.length < 2) return { started: false, message: "Choose at least 2 photos." };
-  startDrawing("slideshow", photos, slideshowDelayMs(seconds), displayId);
-  return { started: true, count: photos.length, message: `Slideshow ready with ${photos.length} photos.` };
+async function startSlideshow(_event, source, seconds, displayId) {
+  const state = publicState();
+  const safeSource = ["random", "favorites", "mine", "gifs"].includes(source) ? source : "random";
+  const items = slideshowChoices(state.cats, state.favorites, safeSource);
+  if (items.length < 2) {
+    const message = safeSource === "favorites"
+      ? "Favorite at least 2 items first."
+      : safeSource === "mine"
+        ? "Add at least 2 of your own items first."
+        : "This slideshow needs at least 2 items.";
+    return { started: false, message };
+  }
+  startDrawing("slideshow", items, slideshowDelayMs(seconds), displayId);
+  return { started: true, count: items.length, message: `Slideshow ready with ${items.length} items.` };
 }
 
 ipcMain.handle("state:get", () => publicState());
