@@ -1,8 +1,21 @@
 const grid = document.querySelector("#cat-grid");
 const empty = document.querySelector("#empty");
 const status = document.querySelector("#status");
-let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K" };
+const targetScreen = document.querySelector("#target-screen");
+let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "" };
 let currentFilter = "all";
+
+function renderScreens() {
+  const previous = targetScreen.value;
+  targetScreen.replaceChildren();
+  for (const screen of state.screens) {
+    const option = document.createElement("option");
+    option.value = screen.id;
+    option.textContent = screen.name;
+    targetScreen.append(option);
+  }
+  targetScreen.value = state.screens.some((screen) => screen.id === previous) ? previous : state.currentScreenId;
+}
 
 function visibleCats() {
   const favorites = new Set(state.favorites);
@@ -15,6 +28,7 @@ function visibleCats() {
 }
 
 function render() {
+  renderScreens();
   const cats = visibleCats();
   const favorites = new Set(state.favorites);
   grid.replaceChildren();
@@ -76,7 +90,7 @@ function render() {
 async function startDrawing(id) {
   status.className = "status";
   status.textContent = "Draw a box anywhere on the screen.";
-  await window.catCanvasDesktop.startDrawing(id);
+  await window.catCanvasDesktop.startDrawing(id, targetScreen.value);
 }
 
 document.querySelector("#random").addEventListener("click", () => startDrawing("random"));
@@ -84,7 +98,7 @@ document.querySelector("#slideshow").addEventListener("click", async () => {
   status.className = "status";
   status.textContent = "Choose at least 2 photos.";
   const seconds = Number(document.querySelector("#slideshow-speed").value);
-  const result = await window.catCanvasDesktop.startSlideshow(seconds);
+  const result = await window.catCanvasDesktop.startSlideshow(seconds, targetScreen.value);
   status.className = `status${result.started ? "" : " error"}`;
   status.textContent = result.message;
 });

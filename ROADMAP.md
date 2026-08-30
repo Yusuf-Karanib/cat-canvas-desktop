@@ -7,11 +7,11 @@
 - Licensed built-in cats and local custom media
 - Optional local photo slideshows
 - Draw, move, resize, replace, lock, remove, and clear
-- Temporary overlays on the main monitor
+- Temporary overlays on any connected monitor
 
 ## Good next improvements
 
-- Multi-monitor support
+- More ways to move placed media between monitors
 - Changeable keyboard shortcut
 - Small optional animal packs
 - Better keyboard accessibility

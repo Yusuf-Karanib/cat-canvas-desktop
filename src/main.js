@@ -12,10 +12,8 @@ const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
 const MAX_SLIDESHOW_PHOTOS = 100;
 
 let pickerWindow;
-let overlayWindow;
+const overlayWindows = new Map();
 let tray;
-let overlayReady = false;
-let overlayIsEmpty = true;
 let quitting = false;
 let settings = { favorites: [], customMedia: [] };
 
@@ -72,10 +70,20 @@ function customMedia() {
 }
 
 function publicState() {
+  const displays = screen.getAllDisplays().sort((left, right) => left.bounds.x - right.bounds.x || left.bounds.y - right.bounds.y);
+  const primaryId = String(screen.getPrimaryDisplay().id);
+  const pickerDisplay = pickerWindow && !pickerWindow.isDestroyed()
+    ? screen.getDisplayMatching(pickerWindow.getBounds())
+    : screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   return {
     cats: [...builtInMedia(), ...customMedia()],
     favorites: settings.favorites,
-    shortcut: process.platform === "darwin" ? "Cmd+Shift+K" : "Ctrl+Shift+K"
+    shortcut: process.platform === "darwin" ? "Cmd+Shift+K" : "Ctrl+Shift+K",
+    screens: displays.map((display, index) => ({
+      id: String(display.id),
+      name: `Screen ${index + 1}${String(display.id) === primaryId ? " (Main)" : ""} · ${display.bounds.width}×${display.bounds.height}`
+    })),
+    currentScreenId: String(pickerDisplay.id)
   };
 }
 
@@ -116,10 +124,13 @@ function createPickerWindow() {
   });
 }
 
-function createOverlayWindow() {
-  const bounds = screen.getPrimaryDisplay().bounds;
-  overlayWindow = new BrowserWindow({
-    ...bounds,
+function createOverlayWindow(display) {
+  const displayId = String(display.id);
+  const existing = overlayWindows.get(displayId);
+  if (existing && !existing.window.isDestroyed()) return existing;
+
+  const overlayWindow = new BrowserWindow({
+    ...display.bounds,
     show: false,
     frame: false,
     transparent: true,
@@ -140,17 +151,23 @@ function createOverlayWindow() {
       sandbox: true
     }
   });
-  overlayWindow.setAlwaysOnTop(true, "floating");
+  const record = { window: overlayWindow, ready: false };
+  overlayWindows.set(displayId, record);
+  overlayWindow.setAlwaysOnTop(true, "screen-saver", 1);
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.loadFile(path.join(__dirname, "overlay.html"));
   overlayWindow.webContents.once("did-finish-load", () => {
-    overlayReady = true;
+    record.ready = true;
   });
   overlayWindow.on("closed", () => {
-    overlayReady = false;
-    overlayWindow = undefined;
+    if (overlayWindows.get(displayId) === record) overlayWindows.delete(displayId);
   });
+  return record;
+}
+
+function createOverlayWindows() {
+  for (const display of screen.getAllDisplays()) createOverlayWindow(display);
 }
 
 function showPicker() {
@@ -160,22 +177,37 @@ function showPicker() {
   log(`Show picker requested. Visible: ${pickerWindow.isVisible()}.`);
 }
 
-function sendToOverlay(channel, payload) {
-  if (!overlayReady) {
-    overlayWindow.webContents.once("did-finish-load", () => overlayWindow.webContents.send(channel, payload));
+function sendToOverlay(record, channel, payload) {
+  if (!record || record.window.isDestroyed()) return;
+  if (!record.ready) {
+    record.window.webContents.once("did-finish-load", () => record.window.webContents.send(channel, payload));
   } else {
-    overlayWindow.webContents.send(channel, payload);
+    record.window.webContents.send(channel, payload);
   }
 }
 
-function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000) {
+function broadcastToOverlays(channel, payload) {
+  for (const record of overlayWindows.values()) sendToOverlay(record, channel, payload);
+}
+
+function targetDisplay(displayId) {
+  const chosen = screen.getAllDisplays().find((display) => String(display.id) === String(displayId));
+  return chosen || screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+}
+
+function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000, displayId) {
   const available = publicState().cats;
   if (id !== "random" && id !== "slideshow" && !available.some((cat) => cat.id === id)) id = "random";
-  overlayWindow.show();
-  overlayWindow.setIgnoreMouseEvents(false);
-  overlayWindow.focus();
-  sendToOverlay("drawing:begin", { requestedId: id, cats: available, slideshow, slideshowDelay });
-  pickerWindow.hide();
+  const display = targetDisplay(displayId);
+  const record = createOverlayWindow(display);
+  record.window.setBounds(display.bounds);
+  record.window.setAlwaysOnTop(true, "screen-saver", 1);
+  record.window.setIgnoreMouseEvents(false);
+  record.window.show();
+  record.window.moveTop();
+  record.window.focus();
+  sendToOverlay(record, "drawing:begin", { requestedId: id, cats: available, slideshow, slideshowDelay });
+  if (pickerWindow && !pickerWindow.isDestroyed()) pickerWindow.hide();
 }
 
 function createTray() {
@@ -185,8 +217,8 @@ function createTray() {
     { label: "Open Cat Picker", click: showPicker },
     { label: "Draw Random Cat", accelerator: SHORTCUT, click: () => startDrawing("random") },
     { type: "separator" },
-    { label: "Unlock All Overlays", click: () => sendToOverlay("overlay:unlock-all") },
-    { label: "Clear All Overlays", click: () => sendToOverlay("overlay:clear") },
+    { label: "Unlock All Overlays", click: () => broadcastToOverlays("overlay:unlock-all") },
+    { label: "Clear All Overlays", click: () => broadcastToOverlays("overlay:clear") },
     { type: "separator" },
     { label: "Quit", click: () => { quitting = true; app.quit(); } }
   ]));
@@ -231,7 +263,7 @@ async function addCustomMedia() {
   };
 }
 
-async function startSlideshow(_event, seconds) {
+async function startSlideshow(_event, seconds, displayId) {
   const result = await dialog.showOpenDialog(pickerWindow, {
     title: "Choose photos for the slideshow",
     properties: ["openFile", "multiSelections"],
@@ -245,7 +277,7 @@ async function startSlideshow(_event, seconds) {
     .map((filePath) => ({ url: mediaUrl(filePath), name: path.basename(filePath) }));
 
   if (photos.length < 2) return { started: false, message: "Choose at least 2 photos." };
-  startDrawing("slideshow", photos, slideshowDelayMs(seconds));
+  startDrawing("slideshow", photos, slideshowDelayMs(seconds), displayId);
   return { started: true, count: photos.length, message: `Slideshow ready with ${photos.length} photos.` };
 }
 
@@ -268,21 +300,23 @@ ipcMain.handle("custom:remove", (_event, id) => {
   broadcastState();
   return publicState();
 });
-ipcMain.handle("drawing:start", (_event, id) => {
-  startDrawing(typeof id === "string" ? id : "random");
+ipcMain.handle("drawing:start", (_event, id, displayId) => {
+  startDrawing(typeof id === "string" ? id : "random", [], 10000, displayId);
   return true;
 });
 ipcMain.on("picker:hide", () => pickerWindow.hide());
-ipcMain.on("overlay:clear", () => sendToOverlay("overlay:clear"));
-ipcMain.on("overlay:ignore-mouse", (_event, ignore) => {
+ipcMain.on("overlay:clear", () => broadcastToOverlays("overlay:clear"));
+ipcMain.on("overlay:ignore-mouse", (event, ignore) => {
+  const overlayWindow = BrowserWindow.fromWebContents(event.sender);
   if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
 });
-ipcMain.on("drawing:finished", () => {
+ipcMain.on("drawing:finished", (event) => {
+  const overlayWindow = BrowserWindow.fromWebContents(event.sender);
   if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.setIgnoreMouseEvents(true, { forward: true });
 });
-ipcMain.on("overlay:empty", (_event, empty) => {
-  overlayIsEmpty = Boolean(empty);
-  if (overlayIsEmpty && overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.hide();
+ipcMain.on("overlay:empty", (event, empty) => {
+  const overlayWindow = BrowserWindow.fromWebContents(event.sender);
+  if (Boolean(empty) && overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.hide();
 });
 
 const singleInstance = app.requestSingleInstanceLock();
@@ -299,7 +333,22 @@ else {
     log("Creating picker.");
     createPickerWindow();
     log("Creating overlay.");
-    createOverlayWindow();
+    createOverlayWindows();
+    screen.on("display-added", (_event, display) => {
+      createOverlayWindow(display);
+      broadcastState();
+    });
+    screen.on("display-removed", (_event, display) => {
+      const record = overlayWindows.get(String(display.id));
+      if (record && !record.window.isDestroyed()) record.window.destroy();
+      overlayWindows.delete(String(display.id));
+      broadcastState();
+    });
+    screen.on("display-metrics-changed", (_event, display) => {
+      const record = overlayWindows.get(String(display.id));
+      if (record && !record.window.isDestroyed()) record.window.setBounds(display.bounds);
+      broadcastState();
+    });
     log("Creating tray.");
     createTray();
     globalShortcut.register(SHORTCUT, () => startDrawing("random"));

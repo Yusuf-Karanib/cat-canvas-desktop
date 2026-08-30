@@ -18,6 +18,7 @@ Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://git
 - Pick from 12 licensed meme images and 12 licensed GIFs
 - Add your own JPG, PNG, WebP, or GIF
 - Optionally choose several photos and place a changing slideshow frame
+- Choose any connected monitor before drawing
 - Draw the exact box where the cat should appear
 - Random cats match wide, tall, and square boxes
 - Move, resize, replace, lock, or remove placed cats
@@ -44,10 +45,6 @@ This first release is not code-signed, so Windows may show a SmartScreen warning
 For a slideshow, choose its speed, select **Photo slideshow**, pick at least 2 photos, then draw its box. Hover over it to go back, pause, play, or go forward. The selected photo list is forgotten when the app closes.
 
 A locked cat lets clicks pass through to the app underneath. Right-click the tray icon and choose **Unlock All Overlays** to edit it again.
-
-## Current limit
-
-Version 1 places cats on the main monitor only. Multi-monitor support is planned.
 
 ## Run the source code
 
