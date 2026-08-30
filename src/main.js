@@ -13,6 +13,7 @@ let pickerWindow;
 const overlayWindows = new Map();
 let tray;
 let quitting = false;
+let activeDrawingRecord;
 let settings = { favorites: [], customMedia: [] };
 
 function log(message) {
@@ -160,6 +161,10 @@ function createOverlayWindow(display) {
     record.ready = true;
   });
   overlayWindow.on("closed", () => {
+    if (activeDrawingRecord === record) {
+      activeDrawingRecord = undefined;
+      globalShortcut.unregister("Escape");
+    }
     if (overlayWindows.get(displayId) === record) overlayWindows.delete(displayId);
   });
   return record;
@@ -206,6 +211,12 @@ function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000, dis
   record.window.show();
   record.window.moveTop();
   record.window.focus();
+  record.window.webContents.focus();
+  activeDrawingRecord = record;
+  globalShortcut.unregister("Escape");
+  if (!globalShortcut.register("Escape", () => sendToOverlay(activeDrawingRecord, "drawing:cancel"))) {
+    log("Could not register Escape while drawing; the focused-window Escape key remains available.");
+  }
   sendToOverlay(record, "drawing:begin", { requestedId: id, cats: available, slideshow, slideshowDelay });
   if (pickerWindow && !pickerWindow.isDestroyed()) pickerWindow.hide();
 }
@@ -311,6 +322,10 @@ ipcMain.on("overlay:ignore-mouse", (event, ignore) => {
 ipcMain.on("drawing:finished", (event) => {
   const overlayWindow = BrowserWindow.fromWebContents(event.sender);
   if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+  if (activeDrawingRecord?.window === overlayWindow) {
+    activeDrawingRecord = undefined;
+    globalShortcut.unregister("Escape");
+  }
 });
 ipcMain.on("overlay:empty", (event, empty) => {
   const overlayWindow = BrowserWindow.fromWebContents(event.sender);

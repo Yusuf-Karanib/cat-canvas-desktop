@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("catCanvasDesktop", {
   overlayEmpty: (empty) => ipcRenderer.send("overlay:empty", Boolean(empty)),
   onStateChanged: (callback) => ipcRenderer.on("state:changed", (_event, state) => callback(state)),
   onStartDrawing: (callback) => ipcRenderer.on("drawing:begin", (_event, payload) => callback(payload)),
+  onCancelDrawing: (callback) => ipcRenderer.on("drawing:cancel", callback),
   onClearAll: (callback) => ipcRenderer.on("overlay:clear", callback),
   onUnlockAll: (callback) => ipcRenderer.on("overlay:unlock-all", callback)
 });

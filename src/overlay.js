@@ -231,6 +231,10 @@ window.catCanvasDesktop.onStartDrawing((payload) => {
   drawLayer.hidden = false;
 });
 
+window.catCanvasDesktop.onCancelDrawing(() => {
+  if (drawingActive) cancelDrawing();
+});
+
 window.catCanvasDesktop.onClearAll(() => {
   for (const item of slideshowControllers.keys()) stopSlideshow(item);
   canvas.replaceChildren();
