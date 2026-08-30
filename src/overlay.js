@@ -1,14 +1,17 @@
 const canvas = document.querySelector("#canvas");
 const drawLayer = document.querySelector("#draw-layer");
 const drawBox = document.querySelector("#draw-box");
-const { randomSuitable } = globalThis.CatCanvasMedia;
+const { randomSuitable, wrapIndex } = globalThis.CatCanvasMedia;
+const SLIDESHOW_DELAY = 5000;
 
 let catalog = [];
 let requestedId = "random";
+let selectedPhotos = [];
 let drawStart = null;
 let drawingActive = false;
 let ignoringMouse = true;
 let moveState = null;
+const slideshowControllers = new Map();
 
 function setIgnoreMouse(ignore) {
   if (ignore === ignoringMouse) return;
@@ -81,8 +84,16 @@ function startMoving(event, item) {
   event.currentTarget.setPointerCapture(event.pointerId);
 }
 
+function stopSlideshow(item) {
+  const controller = slideshowControllers.get(item);
+  if (!controller) return;
+  clearInterval(controller.timer);
+  slideshowControllers.delete(item);
+}
+
 function placeMedia(rect) {
-  const cat = chooseCat(rect.width, rect.height);
+  const isSlideshow = requestedId === "slideshow" && selectedPhotos.length >= 2;
+  const cat = isSlideshow ? selectedPhotos[0] : chooseCat(rect.width, rect.height);
   if (!cat) return;
 
   const item = document.createElement("section");
@@ -91,7 +102,8 @@ function placeMedia(rect) {
   item.style.top = `${rect.top}px`;
   item.style.width = `${rect.width}px`;
   item.style.height = `${rect.height}px`;
-  item.dataset.catId = cat.id;
+  item.dataset.catId = cat.id || "slideshow";
+  item.classList.toggle("slideshow", isSlideshow);
 
   const image = document.createElement("img");
   image.src = cat.url;
@@ -103,23 +115,57 @@ function placeMedia(rect) {
   actions.className = "actions";
   const move = createAction("↕", "Move", null, "move-handle");
   move.addEventListener("pointerdown", (event) => startMoving(event, item));
-  const replace = createAction("↻", "Replace", () => {
-    const next = randomSuitable(catalog, item.offsetWidth, item.offsetHeight, item.dataset.catId);
-    if (!next) return;
-    item.dataset.catId = next.id;
-    image.src = next.url;
-    image.alt = next.name;
-    image.classList.toggle("pixel-media", Boolean(next.pixel));
-  });
   const lock = createAction("▣", "Lock and click through", () => {
     item.classList.add("locked");
     setIgnoreMouse(true);
   });
   const remove = createAction("×", "Remove", () => {
+    stopSlideshow(item);
     item.remove();
     if (!canvas.children.length) window.catCanvasDesktop.overlayEmpty(true);
   });
-  actions.append(move, replace, lock, remove);
+
+  if (isSlideshow) {
+    const controller = { photos: [...selectedPhotos], index: 0, paused: false, timer: null };
+    const show = (index) => {
+      controller.index = wrapIndex(index, controller.photos.length);
+      const photo = controller.photos[controller.index];
+      image.src = photo.url;
+      image.alt = photo.name;
+    };
+    const restart = () => {
+      clearInterval(controller.timer);
+      if (!controller.paused) controller.timer = setInterval(() => show(controller.index + 1), SLIDESHOW_DELAY);
+    };
+    const previous = createAction("‹", "Previous photo", () => {
+      show(controller.index - 1);
+      restart();
+    });
+    const pause = createAction("Ⅱ", "Pause slideshow", () => {
+      controller.paused = !controller.paused;
+      pause.textContent = controller.paused ? "▶" : "Ⅱ";
+      pause.title = controller.paused ? "Play slideshow" : "Pause slideshow";
+      pause.setAttribute("aria-label", pause.title);
+      restart();
+    });
+    const next = createAction("›", "Next photo", () => {
+      show(controller.index + 1);
+      restart();
+    });
+    actions.append(move, previous, pause, next, lock, remove);
+    slideshowControllers.set(item, controller);
+    restart();
+  } else {
+    const replace = createAction("↻", "Replace", () => {
+      const next = randomSuitable(catalog, item.offsetWidth, item.offsetHeight, item.dataset.catId);
+      if (!next) return;
+      item.dataset.catId = next.id;
+      image.src = next.url;
+      image.alt = next.name;
+      image.classList.toggle("pixel-media", Boolean(next.pixel));
+    });
+    actions.append(move, replace, lock, remove);
+  }
 
   const resizeCorner = document.createElement("span");
   resizeCorner.className = "resize-corner";
@@ -171,6 +217,7 @@ window.addEventListener("keydown", (event) => {
 
 window.catCanvasDesktop.onStartDrawing((payload) => {
   catalog = Array.isArray(payload.cats) ? payload.cats : [];
+  selectedPhotos = Array.isArray(payload.slideshow) ? payload.slideshow : [];
   requestedId = payload.requestedId || "random";
   drawingActive = true;
   ignoringMouse = false;
@@ -180,6 +227,7 @@ window.catCanvasDesktop.onStartDrawing((payload) => {
 });
 
 window.catCanvasDesktop.onClearAll(() => {
+  for (const item of slideshowControllers.keys()) stopSlideshow(item);
   canvas.replaceChildren();
   window.catCanvasDesktop.overlayEmpty(true);
 });

@@ -47,6 +47,8 @@ h1 { margin: 0; font-size: 25px; line-height: 1.1; }
   cursor: pointer;
 }
 .add-media:hover { border-color: #b85832; background: #fff2e2; }
+.add-media.slideshow { margin-top: 8px; border-style: solid; }
+.add-media.slideshow .add-plus { background: #59483c; font-size: 11px; }
 .add-media strong, .add-media small { display: block; }
 .add-media strong { font-size: 12px; }
 .add-media small { margin-top: 2px; color: #8b7768; font-size: 10px; }

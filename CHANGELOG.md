@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-08-30
+
+- Added an optional local photo slideshow.
+- Added previous, pause/play, and next slideshow controls.
+- Slideshow choices are temporary and never uploaded.
+
 ## 1.0.0 — 2026-08-30
 
 - First Windows desktop version.

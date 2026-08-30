@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const cats = require("../src/cats");
-const { shapeFor, suitableCats, randomSuitable } = require("../src/media-utils");
+const { shapeFor, suitableCats, randomSuitable, wrapIndex } = require("../src/media-utils");
 
 test("the built-in pack contains 12 stills and 12 GIFs", () => {
   assert.equal(cats.length, 24);
@@ -32,4 +32,10 @@ test("large wide boxes prefer still media", () => {
 test("replacement excludes the current media when alternatives exist", () => {
   const chosen = randomSuitable(cats, 300, 300, "cat-18", () => 0);
   assert.notEqual(chosen.id, "cat-18");
+});
+
+test("slideshow positions wrap forward and backward", () => {
+  assert.equal(wrapIndex(4, 4), 0);
+  assert.equal(wrapIndex(-1, 4), 3);
+  assert.equal(wrapIndex(2, 4), 2);
 });

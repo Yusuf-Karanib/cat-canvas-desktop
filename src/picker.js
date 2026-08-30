@@ -80,6 +80,13 @@ async function startDrawing(id) {
 }
 
 document.querySelector("#random").addEventListener("click", () => startDrawing("random"));
+document.querySelector("#slideshow").addEventListener("click", async () => {
+  status.className = "status";
+  status.textContent = "Choose at least 2 photos.";
+  const result = await window.catCanvasDesktop.startSlideshow();
+  status.className = `status${result.started ? "" : " error"}`;
+  status.textContent = result.message;
+});
 document.querySelector("#add-media").addEventListener("click", async () => {
   const result = await window.catCanvasDesktop.addMedia();
   status.className = `status${result.added ? "" : " error"}`;

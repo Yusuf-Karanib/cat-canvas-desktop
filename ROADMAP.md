@@ -5,6 +5,7 @@
 - Windows app with a tray icon
 - Global Random shortcut
 - Licensed built-in cats and local custom media
+- Optional local photo slideshows
 - Draw, move, resize, replace, lock, remove, and clear
 - Temporary overlays on the main monitor
 

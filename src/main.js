@@ -6,7 +6,9 @@ const cats = require("./cats");
 
 const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const VALID_SLIDESHOW_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
+const MAX_SLIDESHOW_PHOTOS = 100;
 
 let pickerWindow;
 let overlayWindow;
@@ -165,13 +167,13 @@ function sendToOverlay(channel, payload) {
   }
 }
 
-function startDrawing(id = "random") {
+function startDrawing(id = "random", slideshow = []) {
   const available = publicState().cats;
-  if (id !== "random" && !available.some((cat) => cat.id === id)) id = "random";
+  if (id !== "random" && id !== "slideshow" && !available.some((cat) => cat.id === id)) id = "random";
   overlayWindow.show();
   overlayWindow.setIgnoreMouseEvents(false);
   overlayWindow.focus();
-  sendToOverlay("drawing:begin", { requestedId: id, cats: available });
+  sendToOverlay("drawing:begin", { requestedId: id, cats: available, slideshow });
   pickerWindow.hide();
 }
 
@@ -228,6 +230,24 @@ async function addCustomMedia() {
   };
 }
 
+async function startSlideshow() {
+  const result = await dialog.showOpenDialog(pickerWindow, {
+    title: "Choose photos for the slideshow",
+    properties: ["openFile", "multiSelections"],
+    filters: [{ name: "Photos", extensions: ["jpg", "jpeg", "png", "webp"] }]
+  });
+  if (result.canceled) return { started: false, message: "Slideshow canceled." };
+
+  const photos = result.filePaths
+    .filter((filePath) => VALID_SLIDESHOW_EXTENSIONS.has(path.extname(filePath).toLowerCase()) && fs.existsSync(filePath))
+    .slice(0, MAX_SLIDESHOW_PHOTOS)
+    .map((filePath) => ({ url: mediaUrl(filePath), name: path.basename(filePath) }));
+
+  if (photos.length < 2) return { started: false, message: "Choose at least 2 photos." };
+  startDrawing("slideshow", photos);
+  return { started: true, count: photos.length, message: `Slideshow ready with ${photos.length} photos.` };
+}
+
 ipcMain.handle("state:get", () => publicState());
 ipcMain.handle("favorite:toggle", (_event, id) => {
   if (typeof id !== "string" || !publicState().cats.some((cat) => cat.id === id)) return publicState();
@@ -239,6 +259,7 @@ ipcMain.handle("favorite:toggle", (_event, id) => {
   return publicState();
 });
 ipcMain.handle("custom:add", addCustomMedia);
+ipcMain.handle("slideshow:start", startSlideshow);
 ipcMain.handle("custom:remove", (_event, id) => {
   settings.customMedia = settings.customMedia.filter((item) => item.id !== id);
   settings.favorites = settings.favorites.filter((favorite) => favorite !== id);

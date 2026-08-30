@@ -25,5 +25,10 @@
     return choices[Math.floor(random() * choices.length)];
   }
 
-  return Object.freeze({ shapeFor, suitableCats, randomSuitable });
+  function wrapIndex(index, length) {
+    if (!Number.isInteger(length) || length <= 0) return 0;
+    return ((index % length) + length) % length;
+  }
+
+  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex });
 });
