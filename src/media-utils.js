@@ -52,5 +52,11 @@
     return shuffled;
   }
 
-  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices });
+  function nextDisplayId(displayIds, currentId) {
+    if (!Array.isArray(displayIds) || displayIds.length < 2) return currentId;
+    const currentIndex = displayIds.findIndex((id) => String(id) === String(currentId));
+    return displayIds[(currentIndex + 1 + displayIds.length) % displayIds.length];
+  }
+
+  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices, nextDisplayId });
 });

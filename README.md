@@ -19,7 +19,7 @@ Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://git
 - Choose any connected monitor before drawing
 - Draw the exact box where the cat should appear
 - Random cats match wide, tall, and square boxes
-- Move, resize, replace, lock, or remove placed cats
+- Move, resize, replace, send to the next screen, lock, or remove placed cats
 - Use the tray icon to open the picker, unlock cats, clear the screen, or quit
 - Everything stays on your computer
 - Every placed cat disappears when the app closes
@@ -37,7 +37,7 @@ This first release is not code-signed, so Windows may show a SmartScreen warning
 1. Open Cat Canvas Desktop.
 2. Choose a cat, or press `Ctrl+Shift+K` for Random.
 3. Drag a box anywhere on your main screen.
-4. Hover over the cat to move, replace, lock, or remove it.
+4. Hover over the cat to move, replace, send it to the next screen, lock, or remove it.
 5. Drag its bottom-right corner to resize it.
 
 For a slideshow, choose **Random**, **Favorites**, **My media**, or **GIFs**, choose its speed, then select **Media slideshow** and draw its box. Hover over it to go back, pause, play, or go forward.

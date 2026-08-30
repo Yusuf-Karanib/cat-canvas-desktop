@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const cats = require("../src/cats");
-const { shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices } = require("../src/media-utils");
+const { shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices, nextDisplayId } = require("../src/media-utils");
 
 test("the built-in pack contains 12 stills and 12 GIFs", () => {
   assert.equal(cats.length, 24);
@@ -56,4 +56,11 @@ test("slideshows can use favorites, custom media, GIFs, or everything", () => {
   assert.deepEqual(slideshowChoices(catalog, [], "mine", () => 0).map((item) => item.id), ["mine"]);
   assert.deepEqual(slideshowChoices(catalog, [], "gifs", () => 0).map((item) => item.id), ["gif"]);
   assert.equal(slideshowChoices(catalog, [], "random", () => 0).length, 3);
+});
+
+test("moving to the next screen wraps back to the first screen", () => {
+  const displays = ["left", "main", "right"];
+  assert.equal(nextDisplayId(displays, "left"), "main");
+  assert.equal(nextDisplayId(displays, "right"), "left");
+  assert.equal(nextDisplayId(["main"], "main"), "main");
 });

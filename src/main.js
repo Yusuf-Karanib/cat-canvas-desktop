@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
-const { slideshowChoices, slideshowDelayMs } = require("./media-utils");
+const { nextDisplayId, slideshowChoices, slideshowDelayMs } = require("./media-utils");
 
 const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
@@ -330,6 +330,29 @@ ipcMain.on("drawing:finished", (event) => {
 ipcMain.on("overlay:empty", (event, empty) => {
   const overlayWindow = BrowserWindow.fromWebContents(event.sender);
   if (Boolean(empty) && overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.hide();
+});
+ipcMain.handle("overlay:move-next", (event, payload) => {
+  if (!payload || typeof payload !== "object" || !payload.rect) return { moved: false };
+  const sourceWindow = BrowserWindow.fromWebContents(event.sender);
+  const sourceEntry = [...overlayWindows.entries()].find(([, record]) => record.window === sourceWindow);
+  if (!sourceEntry) return { moved: false };
+
+  const displays = screen.getAllDisplays().sort((left, right) => left.bounds.x - right.bounds.x || left.bounds.y - right.bounds.y);
+  const displayIds = displays.map((display) => String(display.id));
+  const targetId = String(nextDisplayId(displayIds, sourceEntry[0]));
+  if (targetId === sourceEntry[0]) return { moved: false };
+  const target = displays.find((display) => String(display.id) === targetId);
+  if (!target) return { moved: false };
+
+  const record = createOverlayWindow(target);
+  record.window.setBounds(target.bounds);
+  record.window.setAlwaysOnTop(true, "screen-saver", 1);
+  record.window.setIgnoreMouseEvents(true, { forward: true });
+  record.window.showInactive();
+  record.window.moveTop();
+  sendToOverlay(record, "overlay:item-add", payload);
+  log(`Moved an overlay from screen ${sourceEntry[0]} to screen ${targetId}.`);
+  return { moved: true, targetId };
 });
 
 const singleInstance = app.requestSingleInstanceLock();

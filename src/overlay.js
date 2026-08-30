@@ -92,17 +92,65 @@ function stopSlideshow(item) {
   slideshowControllers.delete(item);
 }
 
-function placeMedia(rect) {
-  const isSlideshow = requestedId === "slideshow" && slideshowItems.length >= 2;
-  const cat = isSlideshow ? slideshowItems[0] : chooseCat(rect.width, rect.height);
+function removePlacedItem(item) {
+  stopSlideshow(item);
+  item.remove();
+  if (!canvas.children.length) window.catCanvasDesktop.overlayEmpty(true);
+}
+
+async function movePlacedItem(item, currentMedia, controller) {
+  const payload = {
+    rect: {
+      left: item.offsetLeft,
+      top: item.offsetTop,
+      width: item.offsetWidth,
+      height: item.offsetHeight
+    },
+    mode: controller ? "slideshow" : "media",
+    media: controller ? undefined : currentMedia,
+    items: controller ? controller.items : undefined,
+    index: controller ? controller.index : undefined,
+    paused: controller ? controller.paused : undefined,
+    delay: controller ? controller.delay : undefined,
+    catalog
+  };
+  const result = await window.catCanvasDesktop.moveToNextScreen(payload);
+  if (result?.moved) removePlacedItem(item);
+}
+
+function safeRect(rect) {
+  const width = Math.max(48, Math.min(window.innerWidth, Number(rect?.width) || 240));
+  const height = Math.max(48, Math.min(window.innerHeight, Number(rect?.height) || 180));
+  return {
+    left: Math.max(0, Math.min(window.innerWidth - width, Number(rect?.left) || 0)),
+    top: Math.max(0, Math.min(window.innerHeight - height, Number(rect?.top) || 0)),
+    width,
+    height
+  };
+}
+
+function placeMedia(rect, transfer = null) {
+  const placedRect = transfer ? safeRect(rect) : rect;
+  const transferredItems = Array.isArray(transfer?.items) ? transfer.items : [];
+  const isSlideshow = transfer
+    ? transfer.mode === "slideshow" && transferredItems.length >= 2
+    : requestedId === "slideshow" && slideshowItems.length >= 2;
+  const slideshowMedia = transfer ? transferredItems : slideshowItems;
+  const startingIndex = transfer ? wrapIndex(Number(transfer.index) || 0, slideshowMedia.length) : 0;
+  let currentMedia = transfer && !isSlideshow
+    ? transfer.media
+    : isSlideshow
+      ? slideshowMedia[startingIndex]
+      : chooseCat(placedRect.width, placedRect.height);
+  const cat = currentMedia;
   if (!cat) return;
 
   const item = document.createElement("section");
   item.className = "placed";
-  item.style.left = `${rect.left}px`;
-  item.style.top = `${rect.top}px`;
-  item.style.width = `${rect.width}px`;
-  item.style.height = `${rect.height}px`;
+  item.style.left = `${placedRect.left}px`;
+  item.style.top = `${placedRect.top}px`;
+  item.style.width = `${placedRect.width}px`;
+  item.style.height = `${placedRect.height}px`;
   item.dataset.catId = cat.id || "slideshow";
   item.classList.toggle("slideshow", isSlideshow);
 
@@ -121,13 +169,17 @@ function placeMedia(rect) {
     setIgnoreMouse(true);
   });
   const remove = createAction("×", "Remove", () => {
-    stopSlideshow(item);
-    item.remove();
-    if (!canvas.children.length) window.catCanvasDesktop.overlayEmpty(true);
+    removePlacedItem(item);
   });
 
   if (isSlideshow) {
-    const controller = { items: [...slideshowItems], index: 0, paused: false, timer: null, delay: slideshowDelay };
+    const controller = {
+      items: [...slideshowMedia],
+      index: startingIndex,
+      paused: Boolean(transfer?.paused),
+      timer: null,
+      delay: Number(transfer?.delay) || slideshowDelay
+    };
     const show = (index) => {
       controller.index = wrapIndex(index, controller.items.length);
       const nextItem = controller.items[controller.index];
@@ -153,7 +205,12 @@ function placeMedia(rect) {
       show(controller.index + 1);
       restart();
     });
-    actions.append(move, previous, pause, next, lock, remove);
+    const moveScreen = createAction("⇥", "Move to next screen", () => movePlacedItem(item, currentMedia, controller));
+    pause.textContent = controller.paused ? "▶" : "Ⅱ";
+    pause.title = controller.paused ? "Play slideshow" : "Pause slideshow";
+    pause.setAttribute("aria-label", pause.title);
+    show(controller.index);
+    actions.append(move, previous, pause, next, moveScreen, lock, remove);
     slideshowControllers.set(item, controller);
     restart();
   } else {
@@ -161,11 +218,13 @@ function placeMedia(rect) {
       const next = randomSuitable(catalog, item.offsetWidth, item.offsetHeight, item.dataset.catId);
       if (!next) return;
       item.dataset.catId = next.id;
+      currentMedia = next;
       image.src = next.url;
       image.alt = next.name;
       image.classList.toggle("pixel-media", Boolean(next.pixel));
     });
-    actions.append(move, replace, lock, remove);
+    const moveScreen = createAction("⇥", "Move to next screen", () => movePlacedItem(item, currentMedia, null));
+    actions.append(move, replace, moveScreen, lock, remove);
   }
 
   const resizeCorner = document.createElement("span");
@@ -233,6 +292,11 @@ window.catCanvasDesktop.onStartDrawing((payload) => {
 
 window.catCanvasDesktop.onCancelDrawing(() => {
   if (drawingActive) cancelDrawing();
+});
+
+window.catCanvasDesktop.onAddItem((payload) => {
+  if (Array.isArray(payload?.catalog)) catalog = payload.catalog;
+  placeMedia(payload?.rect, payload);
 });
 
 window.catCanvasDesktop.onClearAll(() => {

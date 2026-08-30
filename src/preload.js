@@ -12,9 +12,11 @@ contextBridge.exposeInMainWorld("catCanvasDesktop", {
   setIgnoreMouse: (ignore) => ipcRenderer.send("overlay:ignore-mouse", Boolean(ignore)),
   drawingFinished: () => ipcRenderer.send("drawing:finished"),
   overlayEmpty: (empty) => ipcRenderer.send("overlay:empty", Boolean(empty)),
+  moveToNextScreen: (payload) => ipcRenderer.invoke("overlay:move-next", payload),
   onStateChanged: (callback) => ipcRenderer.on("state:changed", (_event, state) => callback(state)),
   onStartDrawing: (callback) => ipcRenderer.on("drawing:begin", (_event, payload) => callback(payload)),
   onCancelDrawing: (callback) => ipcRenderer.on("drawing:cancel", callback),
   onClearAll: (callback) => ipcRenderer.on("overlay:clear", callback),
-  onUnlockAll: (callback) => ipcRenderer.on("overlay:unlock-all", callback)
+  onUnlockAll: (callback) => ipcRenderer.on("overlay:unlock-all", callback),
+  onAddItem: (callback) => ipcRenderer.on("overlay:item-add", (_event, payload) => callback(payload))
 });
