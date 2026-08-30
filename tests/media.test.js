@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const cats = require("../src/cats");
-const { shapeFor, suitableCats, randomSuitable, wrapIndex } = require("../src/media-utils");
+const { shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs } = require("../src/media-utils");
 
 test("the built-in pack contains 12 stills and 12 GIFs", () => {
   assert.equal(cats.length, 24);
@@ -38,4 +38,10 @@ test("slideshow positions wrap forward and backward", () => {
   assert.equal(wrapIndex(4, 4), 0);
   assert.equal(wrapIndex(-1, 4), 3);
   assert.equal(wrapIndex(2, 4), 2);
+});
+
+test("slideshow speed accepts safe choices and defaults to 10 seconds", () => {
+  assert.equal(slideshowDelayMs(5), 5000);
+  assert.equal(slideshowDelayMs("30"), 30000);
+  assert.equal(slideshowDelayMs(7), 10000);
 });

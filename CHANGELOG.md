@@ -4,6 +4,7 @@
 
 - Added an optional local photo slideshow.
 - Added previous, pause/play, and next slideshow controls.
+- Added 5, 10, 30, and 60 second slideshow speeds.
 - Slideshow choices are temporary and never uploaded.
 
 ## 1.0.0 — 2026-08-30

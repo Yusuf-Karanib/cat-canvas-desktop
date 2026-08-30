@@ -2,11 +2,11 @@ const canvas = document.querySelector("#canvas");
 const drawLayer = document.querySelector("#draw-layer");
 const drawBox = document.querySelector("#draw-box");
 const { randomSuitable, wrapIndex } = globalThis.CatCanvasMedia;
-const SLIDESHOW_DELAY = 5000;
 
 let catalog = [];
 let requestedId = "random";
 let selectedPhotos = [];
+let slideshowDelay = 10000;
 let drawStart = null;
 let drawingActive = false;
 let ignoringMouse = true;
@@ -126,7 +126,7 @@ function placeMedia(rect) {
   });
 
   if (isSlideshow) {
-    const controller = { photos: [...selectedPhotos], index: 0, paused: false, timer: null };
+    const controller = { photos: [...selectedPhotos], index: 0, paused: false, timer: null, delay: slideshowDelay };
     const show = (index) => {
       controller.index = wrapIndex(index, controller.photos.length);
       const photo = controller.photos[controller.index];
@@ -135,7 +135,7 @@ function placeMedia(rect) {
     };
     const restart = () => {
       clearInterval(controller.timer);
-      if (!controller.paused) controller.timer = setInterval(() => show(controller.index + 1), SLIDESHOW_DELAY);
+      if (!controller.paused) controller.timer = setInterval(() => show(controller.index + 1), controller.delay);
     };
     const previous = createAction("‹", "Previous photo", () => {
       show(controller.index - 1);
@@ -218,6 +218,7 @@ window.addEventListener("keydown", (event) => {
 window.catCanvasDesktop.onStartDrawing((payload) => {
   catalog = Array.isArray(payload.cats) ? payload.cats : [];
   selectedPhotos = Array.isArray(payload.slideshow) ? payload.slideshow : [];
+  slideshowDelay = Number.isFinite(payload.slideshowDelay) ? payload.slideshowDelay : 10000;
   requestedId = payload.requestedId || "random";
   drawingActive = true;
   ignoringMouse = false;

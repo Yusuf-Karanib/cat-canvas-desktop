@@ -41,7 +41,7 @@ This first release is not code-signed, so Windows may show a SmartScreen warning
 4. Hover over the cat to move, replace, lock, or remove it.
 5. Drag its bottom-right corner to resize it.
 
-For a slideshow, choose **Photo slideshow**, select at least 2 photos, then draw its box. Hover over it to go back, pause, play, or go forward. The selected photo list is forgotten when the app closes.
+For a slideshow, choose its speed, select **Photo slideshow**, pick at least 2 photos, then draw its box. Hover over it to go back, pause, play, or go forward. The selected photo list is forgotten when the app closes.
 
 A locked cat lets clicks pass through to the app underneath. Right-click the tray icon and choose **Unlock All Overlays** to edit it again.
 

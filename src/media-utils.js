@@ -30,5 +30,11 @@
     return ((index % length) + length) % length;
   }
 
-  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex });
+  function slideshowDelayMs(seconds) {
+    const allowedSeconds = new Set([5, 10, 30, 60]);
+    const safeSeconds = allowedSeconds.has(Number(seconds)) ? Number(seconds) : 10;
+    return safeSeconds * 1000;
+  }
+
+  return Object.freeze({ shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs });
 });

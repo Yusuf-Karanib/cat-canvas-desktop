@@ -83,7 +83,8 @@ document.querySelector("#random").addEventListener("click", () => startDrawing("
 document.querySelector("#slideshow").addEventListener("click", async () => {
   status.className = "status";
   status.textContent = "Choose at least 2 photos.";
-  const result = await window.catCanvasDesktop.startSlideshow();
+  const seconds = Number(document.querySelector("#slideshow-speed").value);
+  const result = await window.catCanvasDesktop.startSlideshow(seconds);
   status.className = `status${result.started ? "" : " error"}`;
   status.textContent = result.message;
 });

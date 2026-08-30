@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
+const { slideshowDelayMs } = require("./media-utils");
 
 const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
@@ -167,13 +168,13 @@ function sendToOverlay(channel, payload) {
   }
 }
 
-function startDrawing(id = "random", slideshow = []) {
+function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000) {
   const available = publicState().cats;
   if (id !== "random" && id !== "slideshow" && !available.some((cat) => cat.id === id)) id = "random";
   overlayWindow.show();
   overlayWindow.setIgnoreMouseEvents(false);
   overlayWindow.focus();
-  sendToOverlay("drawing:begin", { requestedId: id, cats: available, slideshow });
+  sendToOverlay("drawing:begin", { requestedId: id, cats: available, slideshow, slideshowDelay });
   pickerWindow.hide();
 }
 
@@ -230,7 +231,7 @@ async function addCustomMedia() {
   };
 }
 
-async function startSlideshow() {
+async function startSlideshow(_event, seconds) {
   const result = await dialog.showOpenDialog(pickerWindow, {
     title: "Choose photos for the slideshow",
     properties: ["openFile", "multiSelections"],
@@ -244,7 +245,7 @@ async function startSlideshow() {
     .map((filePath) => ({ url: mediaUrl(filePath), name: path.basename(filePath) }));
 
   if (photos.length < 2) return { started: false, message: "Choose at least 2 photos." };
-  startDrawing("slideshow", photos);
+  startDrawing("slideshow", photos, slideshowDelayMs(seconds));
   return { started: true, count: photos.length, message: `Slideshow ready with ${photos.length} photos.` };
 }
 
