@@ -214,7 +214,10 @@ function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000, dis
   record.window.webContents.focus();
   activeDrawingRecord = record;
   globalShortcut.unregister("Escape");
-  if (!globalShortcut.register("Escape", () => sendToOverlay(activeDrawingRecord, "drawing:cancel"))) {
+  if (!globalShortcut.register("Escape", () => {
+    log("Escape cancel requested while drawing.");
+    sendToOverlay(activeDrawingRecord, "drawing:cancel");
+  })) {
     log("Could not register Escape while drawing; the focused-window Escape key remains available.");
   }
   sendToOverlay(record, "drawing:begin", { requestedId: id, cats: available, slideshow, slideshowDelay });

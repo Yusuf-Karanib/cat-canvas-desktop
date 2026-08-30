@@ -105,7 +105,7 @@ def drawing_frames():
 def placed_frames(cat_photo):
     frames, durations = [], []
     for title, detail, duration in (
-        ("3. Your cat appears above the app", "Move · resize · replace", 1500),
+        ("3. Your cat appears above the app", "Move · resize · next screen", 1500),
         ("Lock it when you are done", "Clicks pass through underneath", 1400),
         ("Cat Canvas Desktop", "Temporary · local · open source", 1700),
     ):
@@ -113,7 +113,7 @@ def placed_frames(cat_photo):
         paste_rounded(frame, cat_photo, (245, 155, 680, 385), 13)
         draw = ImageDraw.Draw(frame)
         draw.rounded_rectangle((245, 155, 680, 385), 13, outline="#ff7b45", width=3)
-        for index, symbol in enumerate(("M", "R", "L", "×")):
+        for index, symbol in enumerate(("M", "R", "S", "L", "×")):
             x = 255 + index * 35
             draw.rounded_rectangle((x, 165, x + 28, 193), 7, fill="#30251ee8")
             symbol_font = font(13, True)

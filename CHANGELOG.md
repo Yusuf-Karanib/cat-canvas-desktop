@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 — 2026-08-30
+
+- Made Escape reliably cancel drawing.
+- Added a button that moves placed media to the next connected screen.
+- Kept the item's size, position, media, and slideshow state when moving screens.
+
 ## 1.2.0 — 2026-08-30
 
 - Added a screen picker and support for every connected monitor.
