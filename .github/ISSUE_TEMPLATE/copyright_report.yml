@@ -1,0 +1,24 @@
+name: Copyright report
+description: Report bundled media that may use your work incorrectly.
+title: "[Copyright]: "
+labels: [copyright]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include private identity documents. This form is public.
+  - type: input
+    attributes:
+      label: Cat Canvas file or media name
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Original source
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is wrong?
+      description: Briefly explain your connection to the work and what should be corrected.
+    validations:
+      required: true

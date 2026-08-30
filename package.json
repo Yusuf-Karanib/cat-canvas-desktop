@@ -1,0 +1,40 @@
+{
+  "name": "cat-canvas-desktop",
+  "version": "1.0.0",
+  "description": "Draw temporary cat images and GIFs over any Windows app.",
+  "main": "src/main.js",
+  "author": "Yusuf Karanib and Cat Canvas contributors",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/picker.js && node --check src/overlay.js && node --test",
+    "build": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "44.0.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.yusufkaranib.catcanvasdesktop",
+    "productName": "Cat Canvas Desktop",
+    "asar": true,
+    "directories": {
+      "output": "outputs"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json",
+      "LICENSE",
+      "ASSET-CREDITS.md",
+      "ASSET-LICENSE.md",
+      "PRIVACY.md"
+    ],
+    "win": {
+      "icon": "assets/icons/icon-256.png",
+      "target": ["portable"],
+      "artifactName": "cat-canvas-desktop-v${version}-windows.${ext}"
+    }
+  }
+}

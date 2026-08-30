@@ -1,0 +1,21 @@
+name: Bug report
+description: Tell us what went wrong.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Explain the steps that caused the problem.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Windows version
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Cat Canvas Desktop version
+    validations:
+      required: true

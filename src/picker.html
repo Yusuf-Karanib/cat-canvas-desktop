@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; style-src 'self'; script-src 'self'" />
+    <title>Cat Canvas Desktop</title>
+    <link rel="stylesheet" href="picker.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">CAT CANVAS DESKTOP</p>
+        <h1>Pick a cat</h1>
+      </div>
+      <button class="random" id="random" type="button">Random</button>
+    </header>
+
+    <p class="intro">Choose one, then draw its box anywhere on your screen.</p>
+
+    <button class="add-media" id="add-media" type="button">
+      <span class="add-plus">+</span>
+      <span><strong>Add your own</strong><small>JPG, PNG, WebP, or GIF · saved locally</small></span>
+    </button>
+    <p class="media-notice">Only add media you own or have permission to use.</p>
+
+    <nav class="filters" aria-label="Media filters">
+      <button class="filter active" data-filter="all" type="button">All</button>
+      <button class="filter" data-filter="favorites" type="button">Favorites</button>
+      <button class="filter" data-filter="mine" type="button">Mine</button>
+      <button class="filter" data-filter="gif" type="button">GIFs</button>
+    </nav>
+
+    <main id="cat-grid" class="cat-grid" aria-live="polite"></main>
+    <p id="empty" class="empty" hidden>No media here yet.</p>
+
+    <footer>
+      <p id="status" class="status">Loading cats…</p>
+      <div class="footer-actions">
+        <button id="clear" type="button">Clear screen</button>
+        <button id="hide" type="button">Hide picker</button>
+      </div>
+    </footer>
+    <script src="picker.js"></script>
+  </body>
+</html>

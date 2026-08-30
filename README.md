@@ -1,0 +1,67 @@
+# Cat Canvas Desktop
+
+[![Tests](https://github.com/Yusuf-Karanib/cat-canvas-desktop/actions/workflows/test.yml/badge.svg)](https://github.com/Yusuf-Karanib/cat-canvas-desktop/actions/workflows/test.yml)
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows)
+![MIT code license](https://img.shields.io/badge/code-MIT-2ea44f)
+
+Put temporary cat photos and GIFs above any app on your Windows screen.
+
+![Cat Canvas Desktop picker](docs/picker.png)
+
+## What it does
+
+- Press `Ctrl+Shift+K` to draw a Random cat immediately
+- Pick from 12 licensed meme images and 12 licensed GIFs
+- Add your own JPG, PNG, WebP, or GIF
+- Draw the exact box where the cat should appear
+- Random cats match wide, tall, and square boxes
+- Move, resize, replace, lock, or remove placed cats
+- Use the tray icon to open the picker, unlock cats, clear the screen, or quit
+- Everything stays on your computer
+- Every placed cat disappears when the app closes
+
+Cat Canvas Desktop draws on a transparent layer above your apps. It does not change the apps underneath it.
+
+## Download for Windows
+
+[Download the latest version](https://github.com/Yusuf-Karanib/cat-canvas-desktop/releases/latest)
+
+This first release is not code-signed, so Windows may show a SmartScreen warning. The complete source code is public here for inspection. Do not download copies from unrelated websites.
+
+## Controls
+
+1. Open Cat Canvas Desktop.
+2. Choose a cat, or press `Ctrl+Shift+K` for Random.
+3. Drag a box anywhere on your main screen.
+4. Hover over the cat to move, replace, lock, or remove it.
+5. Drag its bottom-right corner to resize it.
+
+A locked cat lets clicks pass through to the app underneath. Right-click the tray icon and choose **Unlock All Overlays** to edit it again.
+
+## Current limit
+
+Version 1 places cats on the main monitor only. Multi-monitor support is planned.
+
+## Run the source code
+
+You need Node.js 24 or newer.
+
+```powershell
+npm install
+npm start
+```
+
+Run the checks with `npm test`. Build the Windows download with `npm run build`.
+
+## Project documents
+
+- [Roadmap](ROADMAP.md)
+- [Contributing](CONTRIBUTING.md)
+- [Privacy](PRIVACY.md)
+- [Media credits](ASSET-CREDITS.md)
+- [Media licenses](ASSET-LICENSE.md)
+- [Project rules](PROJECT-RULES.md)
+
+## Licenses
+
+The app code is MIT licensed. Bundled media keeps the separate licenses listed in [ASSET-CREDITS.md](ASSET-CREDITS.md).

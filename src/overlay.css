@@ -1,0 +1,93 @@
+:root { color-scheme: light; font-family: Inter, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body, #canvas { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
+body { user-select: none; }
+
+.draw-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  cursor: crosshair;
+  background: #1e17100f;
+}
+.draw-label {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid #ffffff42;
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: white;
+  background: #30251ee8;
+  box-shadow: 0 7px 24px #0004;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.draw-box {
+  position: fixed;
+  border: 3px solid #ff7b45;
+  border-radius: 12px;
+  background: #ff925824;
+  box-shadow: 0 0 0 2px white, 0 8px 28px #0003;
+}
+
+.placed {
+  position: absolute;
+  min-width: 48px;
+  min-height: 48px;
+  overflow: hidden;
+  resize: both;
+  border-radius: 12px;
+  outline: 2px solid transparent;
+  background: #1f1814;
+  box-shadow: 0 8px 24px #0004;
+}
+.placed:hover { outline-color: #ff7b45; }
+.placed.locked { resize: none; outline-color: transparent; }
+.placed img { display: block; width: 100%; height: 100%; pointer-events: none; object-fit: cover; }
+.placed img.pixel-media { image-rendering: pixelated; }
+
+.actions {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.placed:hover .actions, .actions:focus-within { opacity: 1; }
+.placed.locked .actions { display: none; }
+.action {
+  display: grid;
+  min-width: 29px;
+  height: 29px;
+  place-items: center;
+  border: 1px solid #ffffff45;
+  border-radius: 9px;
+  padding: 0 7px;
+  color: white;
+  background: #2b211cde;
+  box-shadow: 0 3px 10px #0004;
+  font: 700 14px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+.action:hover { background: #c75c32; }
+.move-handle { cursor: move; }
+.resize-corner {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 13px;
+  height: 13px;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  border-radius: 1px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px #0008);
+}
+.placed:hover .resize-corner { opacity: .9; }
+.placed.locked .resize-corner { display: none; }
