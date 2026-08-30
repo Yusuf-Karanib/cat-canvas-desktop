@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-08-30
+
+- Added a screen picker and support for every connected monitor.
+- Kept overlays above Chrome and other apps more reliably.
+- Changed slideshows to use Random, Favorites, My media, or GIFs.
+
 ## 1.1.1 — 2026-08-30
 
 - Added 5, 10, 30, and 60 second slideshow speeds.

@@ -151,6 +151,7 @@ function createOverlayWindow(display) {
   });
   const record = { window: overlayWindow, ready: false };
   overlayWindows.set(displayId, record);
+  log(`Created overlay for screen ${displayId} at ${display.bounds.x},${display.bounds.y} (${display.bounds.width}x${display.bounds.height}).`);
   overlayWindow.setAlwaysOnTop(true, "screen-saver", 1);
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   overlayWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -197,6 +198,7 @@ function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000, dis
   const available = publicState().cats;
   if (id !== "random" && id !== "slideshow" && !available.some((cat) => cat.id === id)) id = "random";
   const display = targetDisplay(displayId);
+  log(`Starting ${id} drawing on screen ${display.id}.`);
   const record = createOverlayWindow(display);
   record.window.setBounds(display.bounds);
   record.window.setAlwaysOnTop(true, "screen-saver", 1);
