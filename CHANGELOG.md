@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0 — 2026-08-31
+
+- Added four safe choices for the global Random shortcut.
+- Saved the shortcut choice locally.
+- Kept the previous shortcut when another app already uses the new choice.
+
 ## 1.5.0 — 2026-08-31
 
 - Added a three-step guide that appears the first time the app opens.
