@@ -5,7 +5,7 @@ const test = require("node:test");
 const cats = require("../src/cats");
 const { shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices, nextDisplayId } = require("../src/media-utils");
 const { loginLaunchOptions } = require("../src/startup-utils");
-const { DEFAULT_SHORTCUT, SHORTCUT_CHOICES, normalizeShortcut, shortcutLabel } = require("../src/shortcut-utils");
+const { DEFAULT_SHORTCUT, isValidShortcut, normalizeShortcut, shortcutLabel } = require("../src/shortcut-utils");
 
 test("the built-in pack contains 12 stills and 12 GIFs", () => {
   assert.equal(cats.length, 24);
@@ -97,8 +97,12 @@ test("the picker includes a reusable first-time guide", () => {
   assert.match(picker, /id="tutorial-shortcut"/);
 });
 
-test("Random shortcut choices are limited to safe presets", () => {
-  assert.equal(SHORTCUT_CHOICES.length, 4);
+test("custom Random shortcuts require Ctrl or Alt plus a supported key", () => {
+  assert.equal(isValidShortcut("CommandOrControl+Alt+Shift+Q"), true);
+  assert.equal(isValidShortcut("Alt+F12"), true);
+  assert.equal(isValidShortcut("CommandOrControl+num7"), true);
+  assert.equal(isValidShortcut("Shift+K"), false);
+  assert.equal(isValidShortcut("CommandOrControl"), false);
   assert.equal(normalizeShortcut("not-a-shortcut"), DEFAULT_SHORTCUT);
   assert.equal(shortcutLabel("CommandOrControl+Alt+K", "win32"), "Ctrl+Alt+K");
   assert.equal(shortcutLabel(DEFAULT_SHORTCUT, "darwin"), "Cmd+Shift+K");

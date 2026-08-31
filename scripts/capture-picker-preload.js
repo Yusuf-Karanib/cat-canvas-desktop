@@ -11,12 +11,6 @@ const state = {
   favorites: [cats[0].id, cats[1].id, cats[2].id],
   shortcut: "Ctrl+Shift+K",
   shortcutAccelerator: "CommandOrControl+Shift+K",
-  shortcutChoices: [
-    { accelerator: "CommandOrControl+Shift+K", label: "Ctrl+Shift+K" },
-    { accelerator: "CommandOrControl+Shift+C", label: "Ctrl+Shift+C" },
-    { accelerator: "CommandOrControl+Alt+K", label: "Ctrl+Alt+K" },
-    { accelerator: "Alt+Shift+K", label: "Alt+Shift+K" }
-  ],
   startWithWindows: false,
   tutorialSeen: !process.argv.includes("--tutorial"),
   screens: [
@@ -38,9 +32,10 @@ contextBridge.exposeInMainWorld("catCanvasDesktop", {
   dismissTutorial: async () => state,
   setShortcut: async (accelerator) => {
     state.shortcutAccelerator = accelerator;
-    state.shortcut = state.shortcutChoices.find((choice) => choice.accelerator === accelerator)?.label || state.shortcut;
+    state.shortcut = accelerator.replace("CommandOrControl", "Ctrl");
     return { state, message: "Demo" };
   },
+  setShortcutRecording: async () => true,
   clearAll: () => {},
   hidePicker: () => {},
   onStateChanged: () => {}

@@ -70,10 +70,13 @@
       <input id="start-with-windows" type="checkbox" role="switch" />
     </label>
 
-    <label class="shortcut-setting">
+    <div class="shortcut-setting">
       <span><strong>Random shortcut</strong><small>Draw immediately from anywhere</small></span>
-      <select id="random-shortcut" aria-label="Random cat keyboard shortcut"></select>
-    </label>
+      <div class="shortcut-actions">
+        <button id="random-shortcut" type="button" aria-label="Change Random cat keyboard shortcut">Ctrl+Shift+K</button>
+        <button id="reset-shortcut" class="reset-shortcut" type="button">Reset</button>
+      </div>
+    </div>
 
     <nav class="filters" aria-label="Media filters">
       <button class="filter active" data-filter="all" type="button">All</button>

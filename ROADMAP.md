@@ -4,7 +4,7 @@
 
 - Windows app with a tray icon
 - Global Random shortcut
-- Choice of four safe Random shortcuts
+- User-recorded Random shortcut with a safe default
 - Optional Start with Windows setting
 - First-time quick guide that can be reopened later
 - Licensed built-in cats and local custom media

@@ -5,10 +5,12 @@ const targetScreen = document.querySelector("#target-screen");
 const startupToggle = document.querySelector("#start-with-windows");
 const tutorial = document.querySelector("#tutorial");
 const closeTutorial = document.querySelector("#close-tutorial");
-const shortcutSelect = document.querySelector("#random-shortcut");
+const shortcutButton = document.querySelector("#random-shortcut");
+const resetShortcut = document.querySelector("#reset-shortcut");
 const tutorialShortcut = document.querySelector("#tutorial-shortcut");
-let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", shortcutAccelerator: "CommandOrControl+Shift+K", shortcutChoices: [], screens: [], currentScreenId: "", startWithWindows: false, tutorialSeen: false };
+let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", shortcutAccelerator: "CommandOrControl+Shift+K", screens: [], currentScreenId: "", startWithWindows: false, tutorialSeen: false };
 let currentFilter = "all";
+let recordingShortcut = false;
 
 function showTutorial() {
   tutorial.hidden = false;
@@ -34,14 +36,8 @@ function renderScreens() {
 }
 
 function renderShortcut() {
-  shortcutSelect.replaceChildren();
-  for (const choice of state.shortcutChoices) {
-    const option = document.createElement("option");
-    option.value = choice.accelerator;
-    option.textContent = choice.label;
-    shortcutSelect.append(option);
-  }
-  shortcutSelect.value = state.shortcutAccelerator;
+  if (!recordingShortcut) shortcutButton.textContent = state.shortcut;
+  resetShortcut.disabled = state.shortcutAccelerator === "CommandOrControl+Shift+K";
   tutorialShortcut.replaceChildren();
   const keys = state.shortcut.split("+");
   keys.forEach((key, index) => {
@@ -50,6 +46,54 @@ function renderShortcut() {
     keycap.textContent = key;
     tutorialShortcut.append(keycap);
   });
+}
+
+function acceleratorKey(event) {
+  if (/^Key[A-Z]$/.test(event.code)) return event.code.slice(3);
+  if (/^Digit[0-9]$/.test(event.code)) return event.code.slice(5);
+  if (/^F(?:[1-9]|1[0-9]|2[0-4])$/.test(event.code)) return event.code;
+  if (/^Numpad[0-9]$/.test(event.code)) return `num${event.code.slice(6)}`;
+  const keys = {
+    Space: "Space", Tab: "Tab", CapsLock: "Capslock", NumLock: "Numlock", ScrollLock: "Scrolllock",
+    Backspace: "Backspace", Delete: "Delete", Insert: "Insert", Enter: "Enter",
+    ArrowUp: "Up", ArrowDown: "Down", ArrowLeft: "Left", ArrowRight: "Right",
+    Home: "Home", End: "End", PageUp: "PageUp", PageDown: "PageDown", PrintScreen: "PrintScreen",
+    NumpadDecimal: "numdec", NumpadAdd: "numadd", NumpadSubtract: "numsub", NumpadMultiply: "nummult", NumpadDivide: "numdiv",
+    Semicolon: ";", Equal: "=", Comma: ",", Minus: "-", Period: ".", Slash: "/", Backquote: "`",
+    BracketLeft: "[", BracketRight: "]", Backslash: "\\"
+  };
+  return keys[event.code] || "";
+}
+
+function shortcutFromEvent(event) {
+  const key = acceleratorKey(event);
+  if (!key || (!event.ctrlKey && !event.metaKey && !event.altKey)) return "";
+  const parts = [];
+  if (event.ctrlKey || event.metaKey) parts.push("CommandOrControl");
+  if (event.altKey) parts.push("Alt");
+  if (event.shiftKey) parts.push("Shift");
+  parts.push(key);
+  return parts.join("+");
+}
+
+async function stopShortcutRecording(message = "") {
+  if (!recordingShortcut) return;
+  recordingShortcut = false;
+  await window.catCanvasDesktop.setShortcutRecording(false);
+  shortcutButton.classList.remove("recording");
+  shortcutButton.textContent = state.shortcut;
+  if (message) status.textContent = message;
+}
+
+async function beginShortcutRecording() {
+  if (recordingShortcut) return;
+  await window.catCanvasDesktop.setShortcutRecording(true);
+  recordingShortcut = true;
+  shortcutButton.classList.add("recording");
+  shortcutButton.textContent = "Press keys…";
+  status.className = "status";
+  status.textContent = "Press Ctrl or Alt with another key. Esc cancels.";
+  shortcutButton.focus();
 }
 
 function visibleCats() {
@@ -161,6 +205,29 @@ tutorial.addEventListener("click", (event) => {
   if (event.target === tutorial) hideTutorial();
 });
 document.addEventListener("keydown", (event) => {
+  if (recordingShortcut) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      stopShortcutRecording("Shortcut change cancelled.");
+      return;
+    }
+    if (["Control", "Alt", "Shift", "Meta"].includes(event.key)) return;
+    const accelerator = shortcutFromEvent(event);
+    if (!accelerator) {
+      status.className = "status error";
+      status.textContent = "Hold Ctrl or Alt, then press another key.";
+      return;
+    }
+    stopShortcutRecording().then(async () => {
+      const result = await window.catCanvasDesktop.setShortcut(accelerator);
+      state = result.state;
+      status.className = `status${result.error ? " error" : ""}`;
+      status.textContent = result.message;
+      render();
+    });
+    return;
+  }
   if (event.key === "Escape" && !tutorial.hidden) hideTutorial();
 });
 startupToggle.addEventListener("change", async () => {
@@ -172,15 +239,15 @@ startupToggle.addEventListener("change", async () => {
   startupToggle.disabled = false;
   render();
 });
-shortcutSelect.addEventListener("change", async () => {
-  shortcutSelect.disabled = true;
-  const result = await window.catCanvasDesktop.setShortcut(shortcutSelect.value);
+shortcutButton.addEventListener("click", beginShortcutRecording);
+resetShortcut.addEventListener("click", async () => {
+  const result = await window.catCanvasDesktop.setShortcut("CommandOrControl+Shift+K");
   state = result.state;
   status.className = `status${result.error ? " error" : ""}`;
   status.textContent = result.message;
-  shortcutSelect.disabled = false;
   render();
 });
+window.addEventListener("blur", () => stopShortcutRecording("Shortcut change cancelled."));
 
 for (const button of document.querySelectorAll(".filter")) {
   button.addEventListener("click", () => {

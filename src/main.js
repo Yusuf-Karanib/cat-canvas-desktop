@@ -5,7 +5,7 @@ const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
 const { nextDisplayId, slideshowChoices, slideshowDelayMs } = require("./media-utils");
 const { loginLaunchOptions } = require("./startup-utils");
-const { DEFAULT_SHORTCUT, SHORTCUT_CHOICES, normalizeShortcut, shortcutLabel } = require("./shortcut-utils");
+const { DEFAULT_SHORTCUT, isValidShortcut, normalizeShortcut, shortcutLabel } = require("./shortcut-utils");
 
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
@@ -107,10 +107,6 @@ function publicState() {
     favorites: settings.favorites,
     shortcut: shortcutLabel(settings.shortcut),
     shortcutAccelerator: settings.shortcut,
-    shortcutChoices: SHORTCUT_CHOICES.map((choice) => ({
-      accelerator: choice.accelerator,
-      label: shortcutLabel(choice.accelerator)
-    })),
     startWithWindows: settings.startWithWindows,
     tutorialSeen: settings.tutorialSeen,
     screens: displays.map((display, index) => ({
@@ -150,6 +146,7 @@ function createPickerWindow() {
     else showPicker();
   });
   pickerWindow.on("show", () => log("Picker window shown."));
+  pickerWindow.on("hide", () => globalShortcut.setSuspended(false));
   pickerWindow.webContents.on("render-process-gone", (_event, details) => log(`Picker renderer stopped: ${details.reason}`));
   pickerWindow.on("close", (event) => {
     if (!quitting) {
@@ -385,7 +382,10 @@ ipcMain.handle("tutorial:dismiss", () => {
   return publicState();
 });
 ipcMain.handle("shortcut:set", (_event, accelerator) => {
-  const chosen = normalizeShortcut(accelerator);
+  if (!isValidShortcut(accelerator)) {
+    return { state: publicState(), message: "Use Ctrl or Alt with another key.", error: true };
+  }
+  const chosen = accelerator;
   if (!applyRandomShortcut(chosen)) {
     log(`Could not register shortcut ${chosen}.`);
     return { state: publicState(), message: "That shortcut is already being used by another app.", error: true };
@@ -394,6 +394,10 @@ ipcMain.handle("shortcut:set", (_event, accelerator) => {
   updateTrayMenu();
   broadcastState();
   return { state: publicState(), message: `Random shortcut changed to ${shortcutLabel(settings.shortcut)}.` };
+});
+ipcMain.handle("shortcut:recording", (_event, active) => {
+  globalShortcut.setSuspended(Boolean(active));
+  return true;
 });
 ipcMain.handle("custom:remove", (_event, id) => {
   settings.customMedia = settings.customMedia.filter((item) => item.id !== id);
