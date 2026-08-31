@@ -72,6 +72,7 @@ Run the checks with `npm test`. Build the Windows download with `npm run build`.
 - [Media credits](ASSET-CREDITS.md)
 - [Media licenses](ASSET-LICENSE.md)
 - [Project rules](PROJECT-RULES.md)
+- [Launch kit](LAUNCH.md)
 
 ## Licenses
 
