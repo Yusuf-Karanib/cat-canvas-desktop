@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0 — 2026-08-31
+
+- Replaced the four shortcut presets with a press-your-own shortcut recorder.
+- Added a Reset button for returning to Ctrl+Shift+K.
+- Required Ctrl or Alt so ordinary typing is never blocked.
+
 ## 1.6.0 — 2026-08-31
 
 - Added four safe choices for the global Random shortcut.
