@@ -3,8 +3,21 @@ const empty = document.querySelector("#empty");
 const status = document.querySelector("#status");
 const targetScreen = document.querySelector("#target-screen");
 const startupToggle = document.querySelector("#start-with-windows");
-let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "", startWithWindows: false };
+const tutorial = document.querySelector("#tutorial");
+const closeTutorial = document.querySelector("#close-tutorial");
+let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "", startWithWindows: false, tutorialSeen: false };
 let currentFilter = "all";
+
+function showTutorial() {
+  tutorial.hidden = false;
+  closeTutorial.focus();
+}
+
+async function hideTutorial() {
+  tutorial.hidden = true;
+  if (!state.tutorialSeen) state = await window.catCanvasDesktop.dismissTutorial();
+  document.querySelector("#show-tutorial").focus();
+}
 
 function renderScreens() {
   const previous = targetScreen.value;
@@ -120,6 +133,14 @@ document.querySelector("#clear").addEventListener("click", () => {
   status.textContent = "Screen cleared.";
 });
 document.querySelector("#hide").addEventListener("click", () => window.catCanvasDesktop.hidePicker());
+document.querySelector("#show-tutorial").addEventListener("click", showTutorial);
+closeTutorial.addEventListener("click", hideTutorial);
+tutorial.addEventListener("click", (event) => {
+  if (event.target === tutorial) hideTutorial();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !tutorial.hidden) hideTutorial();
+});
 startupToggle.addEventListener("change", async () => {
   startupToggle.disabled = true;
   const result = await window.catCanvasDesktop.setStartWithWindows(startupToggle.checked);
@@ -148,4 +169,5 @@ window.catCanvasDesktop.getState().then((nextState) => {
   state = nextState;
   status.textContent = `Draw Random: ${state.shortcut} · App stays in the tray`;
   render();
+  if (!state.tutorialSeen) showTutorial();
 });

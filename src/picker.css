@@ -15,6 +15,20 @@ body {
   background: radial-gradient(circle at 95% 0%, #ffe4c2 0, transparent 34%), #fffaf1;
 }
 
+.tutorial[hidden] { display: none; }
+.tutorial { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 24px; background: #2f261fb8; backdrop-filter: blur(3px); }
+.tutorial-card { width: min(100%, 340px); padding: 24px; border: 1px solid #f0dcc8; border-radius: 22px; background: #fffaf1; box-shadow: 0 20px 70px #1d120b55; }
+.tutorial-card h2 { margin: 0 0 18px; font-size: 23px; }
+.tutorial-card ol { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.tutorial-card li { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px; }
+.tutorial-card li > span { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: white; background: #c75c32; font-weight: 800; }
+.tutorial-card li p { margin: 0; color: #66564a; font-size: 13px; }
+.tutorial-card li strong { color: #2f261f; }
+.tutorial-tip { margin: 18px 0; padding: 10px 12px; border-radius: 11px; color: #67564a; background: #f3e8d9; font-size: 11px; text-align: center; }
+kbd { padding: 2px 5px; border: 1px solid #cdbba8; border-bottom-width: 2px; border-radius: 5px; color: #3f332a; background: #fffdf8; font: 700 10px system-ui, sans-serif; }
+.tutorial-close { width: 100%; border: 0; border-radius: 11px; padding: 11px 14px; color: white; background: #c75c32; font-weight: 750; cursor: pointer; }
+.tutorial-close:hover { background: #a84927; }
+
 button { font: inherit; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .eyebrow { margin: 0 0 3px; color: #a54f2c; font-size: 10px; font-weight: 800; letter-spacing: .16em; }

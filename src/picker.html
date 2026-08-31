@@ -8,6 +8,19 @@
     <link rel="stylesheet" href="picker.css" />
   </head>
   <body>
+    <section id="tutorial" class="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-title" hidden>
+      <div class="tutorial-card">
+        <p class="eyebrow">QUICK START</p>
+        <h2 id="tutorial-title">Put a cat anywhere</h2>
+        <ol>
+          <li><span>1</span><p><strong>Pick</strong> a cat, Random, or slideshow.</p></li>
+          <li><span>2</span><p><strong>Draw</strong> its box on any screen.</p></li>
+          <li><span>3</span><p><strong>Edit</strong> it using the buttons on the cat.</p></li>
+        </ol>
+        <p class="tutorial-tip"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd> draws Random immediately.</p>
+        <button id="close-tutorial" class="tutorial-close" type="button">Start using Cat Canvas</button>
+      </div>
+    </section>
     <header>
       <div>
         <p class="eyebrow">CAT CANVAS DESKTOP</p>
@@ -70,6 +83,7 @@
     <footer>
       <p id="status" class="status">Loading cats…</p>
       <div class="footer-actions">
+        <button id="show-tutorial" type="button">How it works</button>
         <button id="clear" type="button">Clear screen</button>
         <button id="hide" type="button">Hide picker</button>
       </div>

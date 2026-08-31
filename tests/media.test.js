@@ -88,3 +88,10 @@ test("development startup includes the project path", () => {
     args: ["C:\\project", "--hidden"]
   });
 });
+
+test("the picker includes a reusable first-time guide", () => {
+  const picker = fs.readFileSync(path.join(__dirname, "..", "src", "picker.html"), "utf8");
+  assert.match(picker, /id="tutorial"/);
+  assert.match(picker, /id="show-tutorial"/);
+  assert.match(picker, /Ctrl<\/kbd> \+ <kbd>Shift<\/kbd> \+ <kbd>K/);
+});

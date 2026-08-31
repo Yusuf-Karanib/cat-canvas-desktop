@@ -5,6 +5,7 @@
 - Windows app with a tray icon
 - Global Random shortcut
 - Optional Start with Windows setting
+- First-time quick guide that can be reopened later
 - Licensed built-in cats and local custom media
 - Slideshows using Random, Favorites, My media, or GIFs
 - Draw, move, resize, replace, lock, remove, and clear

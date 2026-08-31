@@ -17,7 +17,7 @@ const overlayWindows = new Map();
 let tray;
 let quitting = false;
 let activeDrawingRecord;
-let settings = { favorites: [], customMedia: [], startWithWindows: false };
+let settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false };
 
 function log(message) {
   try {
@@ -43,10 +43,11 @@ function loadSettings() {
       customMedia: Array.isArray(parsed.customMedia)
         ? parsed.customMedia.filter((item) => typeof item?.path === "string" && fs.existsSync(item.path))
         : [],
-      startWithWindows: parsed.startWithWindows === true
+      startWithWindows: parsed.startWithWindows === true,
+      tutorialSeen: parsed.tutorialSeen === true
     };
   } catch {
-    settings = { favorites: [], customMedia: [], startWithWindows: false };
+    settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false };
   }
 }
 
@@ -105,6 +106,7 @@ function publicState() {
     favorites: settings.favorites,
     shortcut: process.platform === "darwin" ? "Cmd+Shift+K" : "Ctrl+Shift+K",
     startWithWindows: settings.startWithWindows,
+    tutorialSeen: settings.tutorialSeen,
     screens: displays.map((display, index) => ({
       id: String(display.id),
       name: `Screen ${index + 1}${String(display.id) === primaryId ? " (Main)" : ""} · ${display.bounds.width}×${display.bounds.height}`
@@ -346,6 +348,11 @@ ipcMain.handle("startup:set", (_event, enabled) => {
     log(`Could not change startup setting: ${error.stack || error.message}`);
     return { state: publicState(), message: "Windows could not change this setting.", error: true };
   }
+});
+ipcMain.handle("tutorial:dismiss", () => {
+  settings.tutorialSeen = true;
+  saveSettings();
+  return publicState();
 });
 ipcMain.handle("custom:remove", (_event, id) => {
   settings.customMedia = settings.customMedia.filter((item) => item.id !== id);

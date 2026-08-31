@@ -11,6 +11,7 @@ const state = {
   favorites: [cats[0].id, cats[1].id, cats[2].id],
   shortcut: "Ctrl+Shift+K",
   startWithWindows: false,
+  tutorialSeen: !process.argv.includes("--tutorial"),
   screens: [
     { id: "left", name: "Screen 1 · 1536×864" },
     { id: "main", name: "Screen 2 (Main) · 1920×1080" },
@@ -27,6 +28,7 @@ contextBridge.exposeInMainWorld("catCanvasDesktop", {
   startDrawing: async () => true,
   startSlideshow: async () => ({ started: true, message: "Demo" }),
   setStartWithWindows: async () => ({ state, message: "Demo" }),
+  dismissTutorial: async () => state,
   clearAll: () => {},
   hidePicker: () => {},
   onStateChanged: () => {}
