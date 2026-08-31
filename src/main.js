@@ -5,8 +5,8 @@ const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
 const { nextDisplayId, slideshowChoices, slideshowDelayMs } = require("./media-utils");
 const { loginLaunchOptions } = require("./startup-utils");
+const { DEFAULT_SHORTCUT, SHORTCUT_CHOICES, normalizeShortcut, shortcutLabel } = require("./shortcut-utils");
 
-const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
 const STARTUP_NAME = "Cat Canvas Desktop";
@@ -17,7 +17,7 @@ const overlayWindows = new Map();
 let tray;
 let quitting = false;
 let activeDrawingRecord;
-let settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false };
+let settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false, shortcut: DEFAULT_SHORTCUT };
 
 function log(message) {
   try {
@@ -44,10 +44,11 @@ function loadSettings() {
         ? parsed.customMedia.filter((item) => typeof item?.path === "string" && fs.existsSync(item.path))
         : [],
       startWithWindows: parsed.startWithWindows === true,
-      tutorialSeen: parsed.tutorialSeen === true
+      tutorialSeen: parsed.tutorialSeen === true,
+      shortcut: normalizeShortcut(parsed.shortcut)
     };
   } catch {
-    settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false };
+    settings = { favorites: [], customMedia: [], startWithWindows: false, tutorialSeen: false, shortcut: DEFAULT_SHORTCUT };
   }
 }
 
@@ -104,7 +105,12 @@ function publicState() {
   return {
     cats: [...builtInMedia(), ...customMedia()],
     favorites: settings.favorites,
-    shortcut: process.platform === "darwin" ? "Cmd+Shift+K" : "Ctrl+Shift+K",
+    shortcut: shortcutLabel(settings.shortcut),
+    shortcutAccelerator: settings.shortcut,
+    shortcutChoices: SHORTCUT_CHOICES.map((choice) => ({
+      accelerator: choice.accelerator,
+      label: shortcutLabel(choice.accelerator)
+    })),
     startWithWindows: settings.startWithWindows,
     tutorialSeen: settings.tutorialSeen,
     screens: displays.map((display, index) => ({
@@ -254,19 +260,43 @@ function startDrawing(id = "random", slideshow = [], slideshowDelay = 10000, dis
   if (pickerWindow && !pickerWindow.isDestroyed()) pickerWindow.hide();
 }
 
-function createTray() {
-  tray = new Tray(path.join(app.getAppPath(), "assets", "icons", "icon-32.png"));
-  tray.setToolTip("Cat Canvas Desktop");
+function updateTrayMenu() {
+  if (!tray) return;
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "Open Cat Picker", click: showPicker },
-    { label: "Draw Random Cat", accelerator: SHORTCUT, click: () => startDrawing("random") },
+    { label: `Draw Random Cat (${shortcutLabel(settings.shortcut)})`, click: () => startDrawing("random") },
     { type: "separator" },
     { label: "Unlock All Overlays", click: () => broadcastToOverlays("overlay:unlock-all") },
     { label: "Clear All Overlays", click: () => broadcastToOverlays("overlay:clear") },
     { type: "separator" },
     { label: "Quit", click: () => { quitting = true; app.quit(); } }
   ]));
+}
+
+function createTray() {
+  tray = new Tray(path.join(app.getAppPath(), "assets", "icons", "icon-32.png"));
+  tray.setToolTip("Cat Canvas Desktop");
+  updateTrayMenu();
   tray.on("click", showPicker);
+}
+
+function registerRandomShortcut(accelerator) {
+  return globalShortcut.register(accelerator, () => startDrawing("random"));
+}
+
+function applyRandomShortcut(nextShortcut) {
+  const chosen = normalizeShortcut(nextShortcut);
+  const previous = settings.shortcut;
+  if (chosen === previous && globalShortcut.isRegistered(previous)) return true;
+
+  globalShortcut.unregister(previous);
+  if (registerRandomShortcut(chosen)) {
+    settings.shortcut = chosen;
+    return true;
+  }
+
+  registerRandomShortcut(previous);
+  return false;
 }
 
 function shapeForSize(width, height) {
@@ -353,6 +383,17 @@ ipcMain.handle("tutorial:dismiss", () => {
   settings.tutorialSeen = true;
   saveSettings();
   return publicState();
+});
+ipcMain.handle("shortcut:set", (_event, accelerator) => {
+  const chosen = normalizeShortcut(accelerator);
+  if (!applyRandomShortcut(chosen)) {
+    log(`Could not register shortcut ${chosen}.`);
+    return { state: publicState(), message: "That shortcut is already being used by another app.", error: true };
+  }
+  saveSettings();
+  updateTrayMenu();
+  broadcastState();
+  return { state: publicState(), message: `Random shortcut changed to ${shortcutLabel(settings.shortcut)}.` };
 });
 ipcMain.handle("custom:remove", (_event, id) => {
   settings.customMedia = settings.customMedia.filter((item) => item.id !== id);
@@ -442,7 +483,15 @@ else {
     });
     log("Creating tray.");
     createTray();
-    globalShortcut.register(SHORTCUT, () => startDrawing("random"));
+    if (!registerRandomShortcut(settings.shortcut)) {
+      log(`Could not register saved shortcut ${settings.shortcut}.`);
+      if (settings.shortcut !== DEFAULT_SHORTCUT) {
+        settings.shortcut = DEFAULT_SHORTCUT;
+        if (!registerRandomShortcut(settings.shortcut)) log("Could not register the default Random shortcut.");
+        saveSettings();
+        updateTrayMenu();
+      }
+    }
     log("Cat Canvas Desktop is ready.");
   }).catch((error) => {
     log(`Startup failed: ${error.stack || error.message}`);

@@ -123,6 +123,12 @@ h1 { margin: 0; font-size: 25px; line-height: 1.1; }
 .startup-setting input:checked { border-color: #c75c32; background: #c75c32; }
 .startup-setting input:checked::after { transform: translateX(16px); }
 .startup-setting input:disabled { opacity: .55; cursor: wait; }
+.shortcut-setting { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: -7px 0 14px; padding: 10px 12px; border: 1px solid #eadccb; border-radius: 13px; background: #fffdf8; }
+.shortcut-setting strong, .shortcut-setting small { display: block; }
+.shortcut-setting strong { font-size: 12px; }
+.shortcut-setting small { margin-top: 2px; color: #8b7768; font-size: 10px; }
+.shortcut-setting select { min-width: 112px; border: 1px solid #d9c7b5; border-radius: 8px; padding: 6px; color: #4f4035; background: #fffdf8; font: 700 10px system-ui, sans-serif; }
+.shortcut-setting select:disabled { opacity: .55; cursor: wait; }
 footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid #eadfce; }
 .status { margin: 0 0 10px; }
 .status.error { color: #ad342f; }

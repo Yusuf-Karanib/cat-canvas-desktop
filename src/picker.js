@@ -5,7 +5,9 @@ const targetScreen = document.querySelector("#target-screen");
 const startupToggle = document.querySelector("#start-with-windows");
 const tutorial = document.querySelector("#tutorial");
 const closeTutorial = document.querySelector("#close-tutorial");
-let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "", startWithWindows: false, tutorialSeen: false };
+const shortcutSelect = document.querySelector("#random-shortcut");
+const tutorialShortcut = document.querySelector("#tutorial-shortcut");
+let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", shortcutAccelerator: "CommandOrControl+Shift+K", shortcutChoices: [], screens: [], currentScreenId: "", startWithWindows: false, tutorialSeen: false };
 let currentFilter = "all";
 
 function showTutorial() {
@@ -31,6 +33,25 @@ function renderScreens() {
   targetScreen.value = state.screens.some((screen) => screen.id === previous) ? previous : state.currentScreenId;
 }
 
+function renderShortcut() {
+  shortcutSelect.replaceChildren();
+  for (const choice of state.shortcutChoices) {
+    const option = document.createElement("option");
+    option.value = choice.accelerator;
+    option.textContent = choice.label;
+    shortcutSelect.append(option);
+  }
+  shortcutSelect.value = state.shortcutAccelerator;
+  tutorialShortcut.replaceChildren();
+  const keys = state.shortcut.split("+");
+  keys.forEach((key, index) => {
+    if (index) tutorialShortcut.append(" + ");
+    const keycap = document.createElement("kbd");
+    keycap.textContent = key;
+    tutorialShortcut.append(keycap);
+  });
+}
+
 function visibleCats() {
   const favorites = new Set(state.favorites);
   return state.cats.filter((cat) => {
@@ -43,6 +64,7 @@ function visibleCats() {
 
 function render() {
   renderScreens();
+  renderShortcut();
   startupToggle.checked = Boolean(state.startWithWindows);
   const cats = visibleCats();
   const favorites = new Set(state.favorites);
@@ -148,6 +170,15 @@ startupToggle.addEventListener("change", async () => {
   status.className = `status${result.error ? " error" : ""}`;
   status.textContent = result.message;
   startupToggle.disabled = false;
+  render();
+});
+shortcutSelect.addEventListener("change", async () => {
+  shortcutSelect.disabled = true;
+  const result = await window.catCanvasDesktop.setShortcut(shortcutSelect.value);
+  state = result.state;
+  status.className = `status${result.error ? " error" : ""}`;
+  status.textContent = result.message;
+  shortcutSelect.disabled = false;
   render();
 });
 

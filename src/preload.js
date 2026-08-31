@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("catCanvasDesktop", {
   startSlideshow: (source, seconds, displayId) => ipcRenderer.invoke("slideshow:start", source, seconds, displayId),
   setStartWithWindows: (enabled) => ipcRenderer.invoke("startup:set", enabled),
   dismissTutorial: () => ipcRenderer.invoke("tutorial:dismiss"),
+  setShortcut: (accelerator) => ipcRenderer.invoke("shortcut:set", accelerator),
   clearAll: () => ipcRenderer.send("overlay:clear"),
   hidePicker: () => ipcRenderer.send("picker:hide"),
   setIgnoreMouse: (ignore) => ipcRenderer.send("overlay:ignore-mouse", Boolean(ignore)),

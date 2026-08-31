@@ -17,7 +17,7 @@
           <li><span>2</span><p><strong>Draw</strong> its box on any screen.</p></li>
           <li><span>3</span><p><strong>Edit</strong> it using the buttons on the cat.</p></li>
         </ol>
-        <p class="tutorial-tip"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd> draws Random immediately.</p>
+        <p class="tutorial-tip"><span id="tutorial-shortcut" class="shortcut-keys"></span> draws Random immediately.</p>
         <button id="close-tutorial" class="tutorial-close" type="button">Start using Cat Canvas</button>
       </div>
     </section>
@@ -68,6 +68,11 @@
     <label class="startup-setting">
       <span><strong>Start with Windows</strong><small>Open quietly in the tray after sign-in</small></span>
       <input id="start-with-windows" type="checkbox" role="switch" />
+    </label>
+
+    <label class="shortcut-setting">
+      <span><strong>Random shortcut</strong><small>Draw immediately from anywhere</small></span>
+      <select id="random-shortcut" aria-label="Random cat keyboard shortcut"></select>
     </label>
 
     <nav class="filters" aria-label="Media filters">

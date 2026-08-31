@@ -4,6 +4,7 @@
 
 - Windows app with a tray icon
 - Global Random shortcut
+- Choice of four safe Random shortcuts
 - Optional Start with Windows setting
 - First-time quick guide that can be reopened later
 - Licensed built-in cats and local custom media
@@ -14,7 +15,6 @@
 ## Good next improvements
 
 - More ways to move placed media between monitors
-- Changeable keyboard shortcut
 - Small optional animal packs
 - Better keyboard accessibility
 - Signed Windows releases if the project grows

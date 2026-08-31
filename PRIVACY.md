@@ -8,6 +8,8 @@ The optional Start with Windows choice is saved locally and registered in your W
 
 The app saves only whether you have closed the first-time guide, so it does not keep showing automatically.
 
+Your Random keyboard shortcut choice is also saved in the local settings file.
+
 Slideshows use media already available inside Cat Canvas. Their temporary play order is not saved.
 
 There are no accounts, analytics, ads, uploads, cloud services, or runtime network requests.

@@ -13,6 +13,7 @@ Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://git
 ## What it does
 
 - Press `Ctrl+Shift+K` to draw a Random cat immediately
+- Choose from four safe keyboard shortcuts for drawing Random
 - Pick from 12 licensed meme images and 12 licensed GIFs
 - Add your own JPG, PNG, WebP, or GIF
 - Run a slideshow using Random, Favorites, My media, or GIFs
@@ -43,6 +44,8 @@ This first release is not code-signed, so Windows may show a SmartScreen warning
 5. Drag its bottom-right corner to resize it.
 
 Select **How it works** in the picker to reopen the quick guide.
+
+Use **Random shortcut** in the picker to change the keyboard shortcut. If another app already uses your choice, Cat Canvas keeps the old shortcut.
 
 ![Cat Canvas first-time guide](docs/tutorial.png)
 
