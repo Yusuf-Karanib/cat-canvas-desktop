@@ -4,6 +4,7 @@ const path = require("node:path");
 const test = require("node:test");
 const cats = require("../src/cats");
 const { shapeFor, suitableCats, randomSuitable, wrapIndex, slideshowDelayMs, slideshowChoices, nextDisplayId } = require("../src/media-utils");
+const { loginLaunchOptions } = require("../src/startup-utils");
 
 test("the built-in pack contains 12 stills and 12 GIFs", () => {
   assert.equal(cats.length, 24);
@@ -63,4 +64,27 @@ test("moving to the next screen wraps back to the first screen", () => {
   assert.equal(nextDisplayId(displays, "left"), "main");
   assert.equal(nextDisplayId(displays, "right"), "left");
   assert.equal(nextDisplayId(["main"], "main"), "main");
+});
+
+test("Windows startup uses the original portable file instead of its temporary copy", () => {
+  assert.deepEqual(loginLaunchOptions({
+    isPackaged: true,
+    portableExecutableFile: "C:\\Apps\\Cat Canvas.exe",
+    execPath: "C:\\Temp\\Cat Canvas.exe",
+    appPath: "C:\\project"
+  }), {
+    path: "C:\\Apps\\Cat Canvas.exe",
+    args: ["--hidden"]
+  });
+});
+
+test("development startup includes the project path", () => {
+  assert.deepEqual(loginLaunchOptions({
+    isPackaged: false,
+    execPath: "C:\\Electron\\electron.exe",
+    appPath: "C:\\project"
+  }), {
+    path: "C:\\Electron\\electron.exe",
+    args: ["C:\\project", "--hidden"]
+  });
 });

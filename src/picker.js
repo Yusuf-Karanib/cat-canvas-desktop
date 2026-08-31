@@ -2,7 +2,8 @@ const grid = document.querySelector("#cat-grid");
 const empty = document.querySelector("#empty");
 const status = document.querySelector("#status");
 const targetScreen = document.querySelector("#target-screen");
-let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "" };
+const startupToggle = document.querySelector("#start-with-windows");
+let state = { cats: [], favorites: [], shortcut: "Ctrl+Shift+K", screens: [], currentScreenId: "", startWithWindows: false };
 let currentFilter = "all";
 
 function renderScreens() {
@@ -29,6 +30,7 @@ function visibleCats() {
 
 function render() {
   renderScreens();
+  startupToggle.checked = Boolean(state.startWithWindows);
   const cats = visibleCats();
   const favorites = new Set(state.favorites);
   grid.replaceChildren();
@@ -118,6 +120,15 @@ document.querySelector("#clear").addEventListener("click", () => {
   status.textContent = "Screen cleared.";
 });
 document.querySelector("#hide").addEventListener("click", () => window.catCanvasDesktop.hidePicker());
+startupToggle.addEventListener("change", async () => {
+  startupToggle.disabled = true;
+  const result = await window.catCanvasDesktop.setStartWithWindows(startupToggle.checked);
+  state = result.state;
+  status.className = `status${result.error ? " error" : ""}`;
+  status.textContent = result.message;
+  startupToggle.disabled = false;
+  render();
+});
 
 for (const button of document.querySelectorAll(".filter")) {
   button.addEventListener("click", () => {

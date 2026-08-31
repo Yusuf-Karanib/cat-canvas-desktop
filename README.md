@@ -21,6 +21,7 @@ Prefer a browser-only version? Try the [Cat Canvas Chrome extension](https://git
 - Random cats match wide, tall, and square boxes
 - Move, resize, replace, send to the next screen, lock, or remove placed cats
 - Use the tray icon to open the picker, unlock cats, clear the screen, or quit
+- Optionally start quietly in the Windows tray after sign-in
 - Everything stays on your computer
 - Every placed cat disappears when the app closes
 

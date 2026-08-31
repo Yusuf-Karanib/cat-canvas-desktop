@@ -4,17 +4,20 @@ const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const cats = require("./cats");
 const { nextDisplayId, slideshowChoices, slideshowDelayMs } = require("./media-utils");
+const { loginLaunchOptions } = require("./startup-utils");
 
 const SHORTCUT = "CommandOrControl+Shift+K";
 const VALID_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
 const MAX_CUSTOM_BYTES = 12 * 1024 * 1024;
+const STARTUP_NAME = "Cat Canvas Desktop";
+const startedHidden = process.argv.includes("--hidden");
 
 let pickerWindow;
 const overlayWindows = new Map();
 let tray;
 let quitting = false;
 let activeDrawingRecord;
-let settings = { favorites: [], customMedia: [] };
+let settings = { favorites: [], customMedia: [], startWithWindows: false };
 
 function log(message) {
   try {
@@ -39,10 +42,11 @@ function loadSettings() {
       favorites: Array.isArray(parsed.favorites) ? parsed.favorites.filter((id) => typeof id === "string") : [],
       customMedia: Array.isArray(parsed.customMedia)
         ? parsed.customMedia.filter((item) => typeof item?.path === "string" && fs.existsSync(item.path))
-        : []
+        : [],
+      startWithWindows: parsed.startWithWindows === true
     };
   } catch {
-    settings = { favorites: [], customMedia: [] };
+    settings = { favorites: [], customMedia: [], startWithWindows: false };
   }
 }
 
@@ -53,6 +57,28 @@ function saveSettings() {
 
 function mediaUrl(filePath) {
   return pathToFileURL(filePath).href;
+}
+
+function startupOptions() {
+  return loginLaunchOptions({
+    isPackaged: app.isPackaged,
+    portableExecutableFile: process.env.PORTABLE_EXECUTABLE_FILE,
+    execPath: process.execPath,
+    appPath: app.getAppPath()
+  });
+}
+
+function applyStartupPreference() {
+  if (process.platform !== "win32" || !app.isPackaged) return;
+  const options = startupOptions();
+  const loginSettings = {
+    openAtLogin: settings.startWithWindows,
+    path: options.path,
+    args: options.args,
+    name: STARTUP_NAME
+  };
+  if (settings.startWithWindows) loginSettings.enabled = true;
+  app.setLoginItemSettings(loginSettings);
 }
 
 function builtInMedia() {
@@ -78,6 +104,7 @@ function publicState() {
     cats: [...builtInMedia(), ...customMedia()],
     favorites: settings.favorites,
     shortcut: process.platform === "darwin" ? "Cmd+Shift+K" : "Ctrl+Shift+K",
+    startWithWindows: settings.startWithWindows,
     screens: displays.map((display, index) => ({
       id: String(display.id),
       name: `Screen ${index + 1}${String(display.id) === primaryId ? " (Main)" : ""} · ${display.bounds.width}×${display.bounds.height}`
@@ -111,7 +138,8 @@ function createPickerWindow() {
   pickerWindow.loadFile(path.join(__dirname, "picker.html")).catch((error) => log(`Picker failed to load: ${error.stack || error.message}`));
   pickerWindow.once("ready-to-show", () => {
     log("Picker is ready to show.");
-    showPicker();
+    if (startedHidden) log("Started with Windows and staying hidden in the tray.");
+    else showPicker();
   });
   pickerWindow.on("show", () => log("Picker window shown."));
   pickerWindow.webContents.on("render-process-gone", (_event, details) => log(`Picker renderer stopped: ${details.reason}`));
@@ -305,6 +333,20 @@ ipcMain.handle("favorite:toggle", (_event, id) => {
 });
 ipcMain.handle("custom:add", addCustomMedia);
 ipcMain.handle("slideshow:start", startSlideshow);
+ipcMain.handle("startup:set", (_event, enabled) => {
+  settings.startWithWindows = Boolean(enabled);
+  try {
+    applyStartupPreference();
+    saveSettings();
+    broadcastState();
+    return { state: publicState(), message: settings.startWithWindows ? "Cat Canvas will start with Windows." : "Start with Windows is off." };
+  } catch (error) {
+    settings.startWithWindows = false;
+    saveSettings();
+    log(`Could not change startup setting: ${error.stack || error.message}`);
+    return { state: publicState(), message: "Windows could not change this setting.", error: true };
+  }
+});
 ipcMain.handle("custom:remove", (_event, id) => {
   settings.customMedia = settings.customMedia.filter((item) => item.id !== id);
   settings.favorites = settings.favorites.filter((favorite) => favorite !== id);
@@ -364,11 +406,14 @@ if (!singleInstance) {
   app.quit();
 }
 else {
-  app.on("second-instance", showPicker);
+  app.on("second-instance", (_event, argv) => {
+    if (!argv.includes("--hidden")) showPicker();
+  });
   app.whenReady().then(() => {
     log("Starting Cat Canvas Desktop.");
     app.setAppUserModelId("com.yusufkaranib.catcanvasdesktop");
     loadSettings();
+    applyStartupPreference();
     log("Creating picker.");
     createPickerWindow();
     log("Creating overlay.");
