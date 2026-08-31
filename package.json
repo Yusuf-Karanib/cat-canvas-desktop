@@ -1,6 +1,6 @@
 {
   "name": "cat-canvas-desktop",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Draw temporary cat images and GIFs over any Windows app.",
   "main": "src/main.js",
   "author": "Yusuf Karanib and Cat Canvas contributors",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 — 2026-08-31
+
+- Added an optional Start with Windows switch.
+- Startup opens quietly in the tray.
+- Portable builds register their original file instead of a temporary copy.
+
 ## 1.3.0 — 2026-08-30
 
 - Made Escape reliably cancel drawing.
