@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0 — 2026-08-31
+
+- Added a three-step guide that appears the first time the app opens.
+- Added a How it works button to reopen the guide later.
+- Added a public screenshot of the guide.
+
 ## 1.4.0 — 2026-08-31
 
 - Added an optional Start with Windows switch.
